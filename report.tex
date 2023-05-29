@@ -1,0 +1,80 @@
+\documentclass{article} % For LaTeX2e
+\usepackage{iclr2021_conference,times}
+
+% Optional math commands from https://github.com/goodfeli/dlbook_notation.
+\input{math_commands.tex}
+
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{thmtools}
+\usepackage{mathtools}
+\usepackage{graphicx}
+%\usepackage{algpseudocode}
+%\usepackage{algorithm}
+\usepackage[ruled,vlined,linesnumbered,algosection]{algorithm2e}
+\usepackage{blindtext}
+\usepackage{setspace}
+\usepackage[utf8]{inputenc}
+\usepackage[utf8]{vietnam}
+\usepackage[center]{caption}
+\usepackage[shortlabels]{enumitem}
+\usepackage{fancyhdr} % header, footer
+\usepackage{hyperref} % loại bỏ border với mục lục và công thức
+\usepackage{url}
+\usepackage[nonumberlist, nopostdot, nogroupskip]{glossaries}
+\usepackage{glossary-superragged}
+\usepackage{tikz,tkz-tab}
+%\usepackage[style=numeric,sortcites]{biblatex}
+%\addbibresource{ref.bib}
+%\usepackage[numbers]{natbib}
+\usepackage{indentfirst}
+\usepackage{multirow}
+\usepackage{cancel}
+
+\title{Mô hình sinh dựa trên điểm số bằng \\ phương trình vi phân ngẫu nhiên}
+
+
+\author{Nguyễn Chí Thanh \\
+Khoa Toán - Cơ - Tin học\\
+Trường Đại học Khoa học Tự nhiên\\
+Đại học Quốc Gia Hà Nội \\
+\texttt{nguyenchithanh\_sdh21@hus.edu.vn} \\
+}
+
+\newcommand{\fix}{\marginpar{FIX}}
+\newcommand{\new}{\marginpar{NEW}}
+
+\iclrfinalcopy % Uncomment for camera-ready version, but NOT for submission.
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+    Tạo nhiễu từ dữ liệu là một việc đơn giản, nhưng tạo dữ liệu từ nhiễu được gọi là mô hình sinh.
+    Ở đề tài này, ta sẽ trình bày phương trình vi phân ngẫu nhiên (SDE) biến đổi một phân phối dữ liệu phức tạp thành một phân phối tiên nghiệm biết trước trơn và thông suốt bằng cách dần dần thêm nhiễu vào dữ liệu,
+    và một phương trình vi phân ngẫu nhiên (SDE) ngược (theo thời gian) biến đổi từ phân phối tiên nghiệm trở lại phân phối dữ liệu một cách từ từ bằng việc loại bỏ dần nhiễu.
+    Một điều quan trọng là phương trình vi phân ngược theo thời gian chỉ phụ thuộc vào trường gradient phụ thuộc vào thời gian (được gọi là điểm số) của phân phối dữ liệu bị xáo trộn bởi nhiễu.
+    Bằng việc tận dụng những bước tiến trong mô hình sinh dựa trên điểm, ta có thể ước lượng chính xác điểm với mạng neuron, và sử dụng các bộ giải phương trình vi phân ngẫu nhiên (SDE) bằng phương pháp số để sinh ra các mẫu dữ liệu.
+    Ta sẽ chỉ ra rằng khung làm việc này bao gồm các cách tiếp cận trước đây về mô hình sinh dựa trên điểm số và các mô hình khuếch tán xác suất, cho phép các thủ tục mới để sinh dữ liệu ra đời với những khả năng mạnh hơn.
+    Đặc biệt, ta sẽ giới thiệu một bộ dự đoán - căn chỉnh để căn chỉnh sai lệch trong quá trình biến đổi của phương trình vi phân ngẫu nhiên ngược thời gian được rời rạc hóa.
+    Ta cũng thu được một mạng neuron ODE tương đương được lấy mẫu từ cùng phân phối như SDE, nhưng ngoài ra cũng cho phép tính toán chính xác độ hợp lý, và cải thiện độ hiệu quả của quá trình lấy mẫu.
+    Ngoài ra, ta cũng cung cấp một cách mới để giải các bài toán ngược với các mô hình dựa trên điểm số, được giải thích với các thí nghiệm trên sinh mẫu dựa trên điều kiện nhãn, vẽ ảnh và tô màu.
+    Kết hợp với nhiều bước tiến về các kiến trúc mô hình, ta đã đạt kỷ lục với việc sinh ảnh trên tập CIFAR-10 với điểm Inception score là 9.89 và FID là 2.20 và độ hợp lý rất tốt 2.99 bits/dim, và thể hiện khả năng sinh ảnh chân thực với ảnh có độ phân giải 1024 $\times$ 1024 lần đầu tiên từ một mô hình sinh dựa trên điểm số.
+\end{abstract}
+
+\section{GIỚI THIỆU}
+
+Hai lớp thành công của các mô hình sinh xác suất liên quan đến việc làm biến đổi dữ liệu một cách tuần tự với độ nhiễu tăng dần, sau đó học cách đảo ngược sự biến đổi để tạ thành một mô hình sinh của dữ liệu.
+\textit{Score matching with Langevin dynamics} (SMLD) \citep{song2019generative} ước lượng điểm số (ví dụ gradient của log của hàm mật độ xác suất của dữ liệu) tại từng mức nhiễu, sau đó sử dụng động học Langevin để lấy mẫu từ mỗi dãy các mức nhiễu giảm dần trong suốt quá trình sinh dữ liệu.
+\textit{Denoising diffusion probabilistic modeling} (DDPM) \citep{sohl2015deep,ho2020denoising} huấn luyện một dãy các mô hình xác suất để đảo ngược từng bước của quá trình bị xáo trộn bởi nhiễu,
+sử dụng những kiến thức về dạng chức năng của các phân phối ngược làm cho quá trình huấn luyện dễ dàng hơn.
+Trong không gian trạng thái liên tục, DDPM huấn luyện hàm mục tiêu ngầm tính điểm số tại từng mức nhiễu.
+Vì vậy, ta gọi hai lớp mô hình này là các \textit{mô hình sinh dựa trên điểm số}.
+
+Các mô hình sinh dựa trên điểm số và các kỹ thuật liên quan \citep{bordes2017learning, goyal2017variational,du2019implicit} đã được chứng minh là hiệu quả trong bài toán sinh ảnh \citep{song2019generative,song2020sliced,ho2020denoising}, âm thanh \citep{chen2020wavegrad,kong2020diffwave}, đồ thị \citep{niu2020permutation} và các khối hình \citep{cai2020learning}
+
+\bibliography{iclr2021_conference}
+\bibliographystyle{iclr2021_conference}
+
+\end{document}
