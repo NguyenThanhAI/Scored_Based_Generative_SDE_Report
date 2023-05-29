@@ -32,6 +32,8 @@
 \usepackage{multirow}
 \usepackage{cancel}
 
+\graphicspath{{./figures/}}
+
 \title{Mô hình sinh dựa trên điểm số bằng \\ phương trình vi phân ngẫu nhiên}
 
 
@@ -72,8 +74,35 @@ sử dụng những kiến thức về dạng chức năng của các phân ph�
 Trong không gian trạng thái liên tục, DDPM huấn luyện hàm mục tiêu ngầm tính điểm số tại từng mức nhiễu.
 Vì vậy, ta gọi hai lớp mô hình này là các \textit{mô hình sinh dựa trên điểm số}.
 
-Các mô hình sinh dựa trên điểm số và các kỹ thuật liên quan \citep{bordes2017learning, goyal2017variational,du2019implicit} đã được chứng minh là hiệu quả trong bài toán sinh ảnh \citep{song2019generative,song2020sliced,ho2020denoising}, âm thanh \citep{chen2020wavegrad,kong2020diffwave}, đồ thị \citep{niu2020permutation} và các khối hình \citep{cai2020learning}
+Các mô hình sinh dựa trên điểm số và các kỹ thuật liên quan \citep{bordes2017learning, goyal2017variational,du2019implicit} đã được chứng minh là hiệu quả trong bài toán sinh ảnh \citep{song2019generative,song2020sliced,ho2020denoising}, âm thanh \citep{chen2020wavegrad,kong2020diffwave}, đồ thị \citep{niu2020permutation} và các khối hình \citep{cai2020learning}.
+Để cho phép các phương pháp lấy mẫu mới mở rộng khả năng của các mô hình sinh dựa trên điểm số, ta đề xuất một khung làm việc thống nhất tổng quát hóa các cách tiếp cận trước đó thông qua góc nhìn của phương trình vi phân ngẫu nhiên.
 
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=0.8\textwidth]{1.jpg}
+    \caption{\textbf{Giải một phương trình SDE đảo ngược thời gian thu được một mô hình sinh dựa trên điểm.}
+    Biến đổi dữ liệu thành một phân phối nhiễu đơn giản có thể được thực hiện với một phương trình SDE liên tục theo thời gian.
+    Phương trình SDE này có thể được đảo ngược nếu ta biết điểm của phân phối tại từng bước thời gian trung gian, $\nabla_{\bold{x}}\log p_t (\bold{x})$.}
+    \label{fig:1}
+\end{figure}
+
+Cụ thể, thay vì làm nhiễu với một số hữu hạn của các phân phối nhiễu, ta xét một phân phối biến đổi một cách liên tục theo thời gian tương ứng với quá trình khuếch tán.
+Quá trình này khuếch tán dần dần các điểm dữ liệu thành nhiễu ngẫu nhiên và được cho bởi một SDE cho trước không phụ thuộc vào dữ liệu và không có các tham số có thể huấn luyện.
+Bằng cách đảo ngược quá trình này, ta có thể biến đổi nhiễu thành dữ liệu một cách trơn cho bài toán sinh mẫu dữ liệu.
+Điều quan trọng là quá trình ngược này thỏa mãn SDE ngược theo thời gian \citep{anderson1982reverse}, có thể suy ra từ phương trình SDE thuận được cho bởi điểm số của hàm mật độ xác suất cận biên như là một hàm của thời gian.
+Vì vậy ta có thể xấp xỉ SDE ngược thời gian bằng cách huấn luyện một mạng neuron phụ thuộc thời gian để ước lượng điểm số và sau đó tạo ra các mẫu dữ liệu sử dụng các bộ giải SDE bằng phương pháp số.
+Ý tưởng chính được trình bày ở hình \ref{fig:1}.
+
+Khung làm việc đề xuất có nhiều đóng góp về mặt lý thuyết và thực tiễn:
+
+\textbf{Lấy mẫu linh hoạt và tính toán độ hợp lý:} Ta có thể sử dụng bất kỳ một bộ giải phương trình SDE đa chức năng nào để tích hợp phương trình SDE đảo ngược thời gian cho bài toán lấy mẫu.
+Hơn nữa, ta đề xuất hai phương pháp đặc biệt mà không phù hợp với phương trình SDE nói chung: (i) Bộ lấy mẫu Dự đoán - Căn chỉnh (PC) kết hợp với bộ giải SDE bằng phương pháp số và cách tiếp cận MCMC (Markov Chain Monte Carlo) dựa trên điểm số, như Langevin MCMC \citep{parisi1981correlation} và HMC \citep{neal2011mcmc} và (ii) các bộ lấy mẫu tất định dựa trên dòng xác suất của các phương trình vi phân thường (ODE).
+Phương pháp thứ nhất hợp nhất vả cải thiện các phương pháp lấy mẫu hiện có cho các mô hình dựa trên điểm số.
+Phương pháp thứ hai cho phép lấy mẫu thích ứng nhanh thông qua một hộp đen là một bộ giải phương trình ODE, các thao tác trên dữ liệu linh hoạt thông qua mã ẩn, mỗi mã có tính duy nhất và điều đáng chú ý ta có thể tính chính xác độ hợp lý.
+
+\textbf{Sinh dữ liệu có điều kiện:} Ta có thể điều chỉnh quá trình sinh dữ liệu bằng cách điều chỉnh các thông tin không có sẵn trong quá trình huấn luyện
+
+\newpage
 \bibliography{iclr2021_conference}
 \bibliographystyle{iclr2021_conference}
 
