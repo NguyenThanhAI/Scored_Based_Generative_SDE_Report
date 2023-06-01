@@ -100,7 +100,42 @@ Hơn nữa, ta đề xuất hai phương pháp đặc biệt mà không phù h�
 Phương pháp thứ nhất hợp nhất vả cải thiện các phương pháp lấy mẫu hiện có cho các mô hình dựa trên điểm số.
 Phương pháp thứ hai cho phép lấy mẫu thích ứng nhanh thông qua một hộp đen là một bộ giải phương trình ODE, các thao tác trên dữ liệu linh hoạt thông qua mã ẩn, mỗi mã có tính duy nhất và điều đáng chú ý ta có thể tính chính xác độ hợp lý.
 
-\textbf{Sinh dữ liệu có điều kiện:} Ta có thể điều chỉnh quá trình sinh dữ liệu bằng cách điều chỉnh các thông tin không có sẵn trong quá trình huấn luyện
+\textbf{Sinh dữ liệu có điều kiện:} Ta có thể điều chỉnh quá trình sinh dữ liệu bằng cách điều chỉnh các thông tin không có sẵn trong quá trình huấn luyện, bởi vì phương trình SDE đảo ngược thời gian có điều kiện có thể được ước lượng hiệu quả từ các điểm số \textit{không có điều kiện}.
+Điều này cho phép các ứng dụng như sinh ảnh có điều kiện về lớp, vẽ ảnh, tô màu cũng như các bài toán ngược khác, tất cả các bài toán trên đều có thể được giải quyết bằng cách sử dụng một mô hình dựa trên điểm số không có điều kiện mà không cần phải huấn luyện lại mô hình.
+
+\textbf{Khung làm việc thống nhất:} Khung làm việc của ta cung cấp một cách thống nhất để khai phá của chỉnh định nhiều phương trình SDE cho việc cải thiện các mô hình sinh dựa trên điểm số.
+Các phương pháp của SMLD và DDPM có thể được đưa vào khung làm việc của ta bằng cách rời rạc hóa hai phương trình SDE riêng biệt.
+Mặc dù DDPM \citep{ho2020denoising} gần đây đã được báo cáo là có thể đạt được mẫu có chất lượng cao hơn SMLD \citep{song2019generative,song2020improved}, ta chỉ ra điều đó với kiến trúc mạng tốt hơn và các thuật toán lấy mẫu mới cho phép bởi khung làm việc của ta, mô hình sau đó có thể bắt kịp và đạt được đến điểm Inception kỷ lục (9.89) và FID (2.20) trên tập CIFAR-10 cũng như độ chân thực của ảnh có độ phân giải 1024 $\times$ 1024 lần đầu tiên từ một mô hình sinh dựa trên điểm.
+Ngoài ra, ta đề xuất một phương trình SDE mới trong khung làm việc của ta thu được độ hợp lý có giá trị 2.99 bits/dim trên tập CIFAR-10, tạo nên một kỷ lục mới cho bài toán này.
+
+\section{Kiến thức nền tảng}
+
+\subsection{Khử nhiều khớp điểm số với động học Langevin (SMLD)}
+
+Đặt $p_{\sigma}(\tilde{\bold{x}} \vert \bold{x}) \vcentcolon = \mathcal{N}(\tilde{\bold{x}};\bold{x}, \sigma^2 \bold{I})$ là một nhân tạo ra nhiễu, và $p_{\sigma}(\tilde{\bold{x}})\vcentcolon = \int p_{\mathrm{data}}(\bold{x}) p_{\sigma}(\tilde{\bold{x}} \vert \bold{x}) d \bold{x}$, với $p_{\mathrm{data}}$ ký hiệu là phân phối dữ liệu.
+Ta xét một dãy các mức nhiễu dương $\sigma_{\min} < \sigma_2 < \dots < \sigma_N = \sigma_{\max}$.
+Thông thường, $\sigma_{\min}$ đủ nhỏ dể $p_{\sigma_{\min}} \approx p_{\mathrm{data}}(\bold{x})$, và $\sigma_{\max}$ đủ lớn để $p_{\sigma_{\max}}\approx \mathcal{N}(\bold{x}; \bold{0}, \sigma_{\max}^2 \bold{I})$.
+\citep{song2019generative} đề xuất huấn luyện một mạng điểm số có điều kiện nhiễu (Noise Conditional Score Network - NCSN), ký hiệu $\bold{s}_{\boldsymbol{\theta}}(\bold{x}, \sigma)$ với một tổng có trọng số của các hàm khớp điểm số khử nhiễu \citep{vincent2011connection}:
+
+\begin{equation}
+    \boldsymbol{\theta}^{\ast} = \argmin_{\boldsymbol{\theta}} \sum_{i=1}^N \sigma_i^2 \mathbb{E}_{p_{\mathrm{data}}(\bold{x})} \mathbb{E}_{p_{\sigma_i}(\tilde{\bold{x}} \vert \bold{x})} \big\lbrack \lVert \bold{s}_{\boldsymbol{\theta} (\tilde{\bold{x}}, \sigma_i)} - \nabla_{\tilde{\bold{x}}} \log p_{\sigma_i} (\tilde{\bold{x}} \vert \bold{x})  \rVert_2^2 \big\rbrack
+\end{equation}
+
+Khi được cho một dữ liệu và một mô hình có kích thước phù hợp, mô hình dựa trên điểm số tối ưu $\bold{s}_{\boldsymbol{\theta}^{\ast}}(\bold{x}, \sigma)$ khớp với $\nabla_{\bold{x}} \log p_{\sigma}(\bold{x})$ tại hầu hết vị trí với $\sigma \in \lbrace \sigma_i \rbrace_{i=1}^N$.
+Để lấy mẫu, \citep{song2019generative} chạy M bước của Langevin MCMC để thu được mẫu dữ liệu cho lần lượt từng $p_{\sigma_i}(\bold{x})$:
+
+\begin{equation}
+    \bold{x}_i^m = \bold{x}_i^{m-1} + \epsilon_i \bold{s}_{\boldsymbol{\theta}^{\ast}} (\bold{x}_i^{m-1}, \sigma_i) + \sqrt{2 \epsilon_i} \bold{z}_i^m, m = 1, 2, \dots, M
+\end{equation}
+
+với $\epsilon_i > 0$ là độ dài bước và $\bold{z}_i^m$ là một biến tuân theo phân phối chuẩn tắc.
+Công thức trên được lặp lại cho $i=N, N-1, \dots, 1$ với $\bold{x}_N^0 \sim \mathcal{N}(\bold{x} \vert \bold{0}, \sigma_{\max}^2 \bold{I})$ và $\bold{x}_i^0 = \bold{x}_{i+1}^M$ khi $i < N$. Khi $M \rightarrow \infty$ và $\epsilon_i \rightarrow 0$ với mọi $i, \bold{x}_1^M$ trở thành một mẫu chính xác từ $p_{\sigma_{\min}}(\bold{x})\approx p_{\mathrm{data}}(\bold{x})$ trong một số điều kiện.
+
+
+\subsection{Mô hình xác suất khuếch tán khử nhiễu (DDPM)}
+
+\citep{sohl2015deep,ho2020denoising} xét một dãy các ngưỡng nhiễu dương $0 < \beta_1, \beta_2, \dots, \beta_N < 1$.
+Với từng điểm dữ liệu huấn luyện $\bold{x}_0 \sim p_{\mathrm{data}}(\bold{x})$, một xích Markov rời rạc $\lbrace \bold{x}_1, \bold{x}_2, \dots, \bold{x}_N \rbrace$ được tạo ra sao cho $p(\bold{x}_i \vert \bold{x}_{i-1}) = \mathcal{N}(\bold{x}_i; \sqrt{1-\beta}_i)$
 
 \newpage
 \bibliography{iclr2021_conference}
