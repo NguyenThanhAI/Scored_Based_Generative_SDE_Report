@@ -209,8 +209,50 @@ Một khi điểm số của phân phối cận biên $\nabla_{\bold{x}} p_t(\bo
 
 Điểm số của một phân phối có thể được ước lượng bằng cách huấn luyện một mô hình dựa trên điểm số trên các mẫu với khớp điểm số \citep{hyvarinen2005estimation,song2020sliced}. Để ước lượng $\nabla_{\bold{x}} \log p_t(\bold{x})$, ta có thể huấn luyện một mô hình dựa trên điểm số phụ thuộc vào thời gian $\bold{s}_{\boldsymbol{\theta}}(\bold{x}, t)$ thông qua một tổng quát hóa liên tục từ phương trình \ref{eq:1} và phương trình \ref{eq:3}:
 
-\begin{equation}
+\begin{equation} \label{eq:7}
     \boldsymbol{\theta}^{\ast} = \argmin_{\boldsymbol{\theta}} \mathbb{E}_t \Big \lbrace  \lambda(t) \mathbb{E}_{\bold{x}(0)} \mathbb{E}_{\bold{x}(t) \bold{x}(0)} \big \lbrack \lVert \bold{s}_{\boldsymbol{\theta}} (\bold{x}(t), t) - \nabla_{\bold{x}(t)} \log p_{0t} (\bold{x}(t) \vert \bold{x}(0)) \rVert_2^2 \big \lbrack \Big \rbrace
+\end{equation}
+
+với $\lambda: \lbrace 0, T \rbrace \rightarrow \mathbb{R}_{>0}$ là một hàm trọng số dương,
+$t$ được lấy mẫu theo phân phối đều trên đoạn $\lbrace 0, T \rbrace$, $\bold{x}(0) \sim p_0 (\bold{x})$ và $\bold{x}(t) \sim p_{0t} (\bold{x}(t) \vert \bold{x}(0))$.
+Với mô hình có kích thước và lượng dữ liệu phù hợp, khớp điểm số đảm bảo lời giải tối ưu của phương trình \ref{eq:7} được ký hiệu bởi $\bold{s}_{\boldsymbol{\theta}^{\ast}}(\bold{x}, t)$ bằng với $\nabla_{\bold{x}} \log p_t (\bold{x})$ với hầu hết $\bold{x}$ và $t$.
+Trong SMLD và DDPM, ta thường chọn $\lambda \propto 1 / \mathbb{E} \big \lbrack \lVert \nabla_{\bold{x}(t)} \log p_{0t} (\bold{x}(t) \vert \bold{x}(0)) \rVert_2^2 \big \rbrack$.
+Ta cần chú ý rằng công thức \ref{eq:7} sử dụng khớp điểm số khử nhiễu nhưng các hàm mục tiêu khớp điểm số khác ví dụ như khớp điểm số theo lát \citep{song2020sliced} và khớp điểm số sai phân hữu hạn \citep{pang2020efficient} cũng có thể được áp dụng ở đây.
+
+Ta thường cũng cần phải biết nhân chuyển tiếp $p_{0t} (\bold{x}(t) \vert \bold{x}(0))$ để giải phương trình \ref{eq:7} một cách hiệu quả.
+Nếu $\bold{f}(.,t)$ là hàm affine, nhân chuyển tiếp luôn luôn là phân phối Gaussian mà trung bình và phương sai thường được biết trong dạng đóng và có thể thu được bằng các kỹ thuật chuẩn tắc (xem mục 5.5  trong \cite{sarkka2019applied}).
+Với phương trình SDE tổng quát hơn, ta có thể giải phương trình Kolmogorov thuận \citep{oksendal2003stochastic} để thu được $p_{0t} (\bold{x}(t) \vert \bold{x}(0))$.
+Một cách khác, ta có thể mô phỏng phương trình SDE để lấy mẫu từ $p_{0t}(\bold{x}(t) \vert \bold{x}(0))$ và thay thế thành phần khớp điểm số khử nhiễu trong \ref{eq:7} với khớp điểm số theo lát để huấn luyện mô hình mà bỏ qua việc tính toán $\nabla_{\bold{x}(t)} \log p_{0t} (\bold{x}(t) \vert \bold{x}(0))$ (xem phụ lục ).
+
+\subsection{Một số ví dụ: VE, VP SDE và các SDE khác}
+
+Nhiễu được dùng để làm xáo trộn dữ liệu trong SMLD và DDPM có thể được xem là phiên bản rời rạc hóa của hai phương trình SDE khác nhau.
+Ta sẽ nói ngắn gọn về phần này và chi tiết dudocj trình bày ở phụ lục .
+
+Khi ta sử dụng $N$ mức nhiễu, từng nhân xáo trộn dữ liệu $p_{\sigma_i}(\bold{x} \vert \bold{x}_0)$ của SMLD tương ứng với phân phối của $\bold{x}_i$ theo xích Markov sau:
+
+\begin{equation}
+    \bold{x}_i = \bold{x}_{i-1} + \sqrt{\sigma_i^2 - \sigma_{i-1}^2} \bold{z}_{i-1}, i=1, \dots, N
+\end{equation}
+
+với $\bold{z}_{i-1} \sim \mathcal{N}(\bold{0}, \bold{I})$ và ta đã đặt $\sigma_0=0$ để làm đơn giản hóa ký hiệu.
+Khi $N \rightarrow \infty$, $\lbrace \sigma_i \rbrace_{i=1}^N$ trở thành một hàm $\sigma(t)$, $\bold{z}_i$ trở thành $\bold{z}_t$, và xích Markov $\lbrace \bold{x}_i \rbrace_{i=1}^N$ trở thành một quá trình ngẫu nhiên liên tục $\lbrace \bold{x}(t) \rbrace_{t=0}^1$, ta sử dụng biến thời gian liên tục $t \in \lbrack 0, 1 \rbrack$ để đánh chỉ số thay vì số nguyên $i$.
+Quá trình $\lbrace \bold{x}(t) \rbrace_{t=0}^1$ được cho bởi phương trình SDE sau:
+
+\begin{equation} \label{eq:9}
+    d \bold{x} = \sqrt{\dfrac{d \lbrack \sigma^2(t) \rbrack}{dt}} d \bold{w}
+\end{equation}
+
+Tương tự như với nhân gây xáo trộn $\lbrace p_{\alpha_i} (\bold{x} \vert \bold{x}_0) \rbrace_{i=1}^N$ của DDPM, xích Markov rời rạc là:
+
+\begin{equation} \label{eq:10}
+    \bold{x}_i = \sqrt{1 - \beta_i} \bold{x}_{i-1} + \sqrt{\beta_i} \bold{z}_{i-1}, i=1,\dots,N
+\end{equation}
+
+Khi $N \rightarrow \infty$, phương trình \ref{eq:10} hội tụ về phương trình SDE sau đây:
+
+\begin{equation} \label{eq:11}
+    d \bold{x} = \dfrac{1}{2} \beta(t) \bold{x} dt + \sqrt{\beta(t)} d\bold{w}
 \end{equation}
 
 \newpage
