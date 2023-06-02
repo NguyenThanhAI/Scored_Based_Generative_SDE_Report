@@ -117,7 +117,7 @@ Ta xét một dãy các mức nhiễu dương $\sigma_{\min} < \sigma_2 < \dots 
 Thông thường, $\sigma_{\min}$ đủ nhỏ dể $p_{\sigma_{\min}} \approx p_{\mathrm{data}}(\bold{x})$, và $\sigma_{\max}$ đủ lớn để $p_{\sigma_{\max}}\approx \mathcal{N}(\bold{x}; \bold{0}, \sigma_{\max}^2 \bold{I})$.
 \citep{song2019generative} đề xuất huấn luyện một mạng điểm số có điều kiện nhiễu (Noise Conditional Score Network - NCSN), ký hiệu $\bold{s}_{\boldsymbol{\theta}}(\bold{x}, \sigma)$ với một tổng có trọng số của các hàm khớp điểm số khử nhiễu \citep{vincent2011connection}:
 
-\begin{equation}
+\begin{equation} \label{eq:1}
     \boldsymbol{\theta}^{\ast} = \argmin_{\boldsymbol{\theta}} \sum_{i=1}^N \sigma_i^2 \mathbb{E}_{p_{\mathrm{data}}(\bold{x})} \mathbb{E}_{p_{\sigma_i}(\tilde{\bold{x}} \vert \bold{x})} \big\lbrack \lVert \bold{s}_{\boldsymbol{\theta} (\tilde{\bold{x}}, \sigma_i)} - \nabla_{\tilde{\bold{x}}} \log p_{\sigma_i} (\tilde{\bold{x}} \vert \bold{x})  \rVert_2^2 \big\rbrack
 \end{equation}
 
@@ -135,7 +135,83 @@ Công thức trên được lặp lại cho $i=N, N-1, \dots, 1$ với $\bold{x}
 \subsection{Mô hình xác suất khuếch tán khử nhiễu (DDPM)}
 
 \citep{sohl2015deep,ho2020denoising} xét một dãy các ngưỡng nhiễu dương $0 < \beta_1, \beta_2, \dots, \beta_N < 1$.
-Với từng điểm dữ liệu huấn luyện $\bold{x}_0 \sim p_{\mathrm{data}}(\bold{x})$, một xích Markov rời rạc $\lbrace \bold{x}_1, \bold{x}_2, \dots, \bold{x}_N \rbrace$ được tạo ra sao cho $p(\bold{x}_i \vert \bold{x}_{i-1}) = \mathcal{N}(\bold{x}_i; \sqrt{1-\beta}_i)$
+Với từng điểm dữ liệu huấn luyện $\bold{x}_0 \sim p_{\mathrm{data}}(\bold{x})$, một xích Markov rời rạc $\lbrace \bold{x}_1, \bold{x}_2, \dots, \bold{x}_N \rbrace$ được tạo ra sao cho $p(\bold{x}_i \vert \bold{x}_{i-1}) = \mathcal{N}(\bold{x}_i; \sqrt{1-\beta_i} \bold{x}_{i-1}, \beta_i \bold{I})$ và vì vậy $p_{\alpha_i}=\mathcal{N}(\bold{x}_i; \sqrt{\alpha_i}\bold{x}_0, (1-\alpha_i)\bold{I})$,
+với $\alpha_i \vcentcolon = \prod_{j=1}^i (1 - \beta_j)$.
+Tương tự với SMLD, ta có thể ký hiệu phân phối dữ liệu bị xáo trộn là $p_{\alpha_i}\vcentcolon =  \int p_{\mathrm{data}}(\bold{x}) p_{\alpha_i}(\tilde{\bold{x}} \vert \bold{x}) d \bold{x}$.
+Các mức nhiễu được chọn sao cho $\bold{x}_N$ có phân phối xấp xỉ phân phối chuẩn tắc $\mathcal{N}(\bold{0}, \bold{I})$.
+Một xích Markov biến phân theo chiều ngược được tham số hóa với $p_{\boldsymbol{\theta}} (\bold{x}_{i-1} \vert \bold{x}_i)=\mathcal{N}\Big(\bold{x}_{i-1}; \dfrac{1}{\sqrt{1-\beta_i}}(\bold{x}_i + \beta_i \bold{s}_{\boldsymbol{\theta}}(\bold{x}_i, i)), \beta_i \bold{I}\Big)$ và được huấn luyện với một biến thể được đánh lại trọng số của cận dưới của độ hợp lý (ELBO):
+
+\begin{equation} \label{eq:3}
+    \boldsymbol{\theta}^{\ast} = \argmin_{\boldsymbol{\theta}} \sum_{i=1}^N (1 - \alpha_i) \mathbb{E}_{p_{\mathrm{data}}(\bold{x})} \mathbb{E}_{p_{\alpha_i (\tilde{\bold{x}} vert \bold{x})}} \big \lbrack \lVert \bold{s}_{\boldsymbol{\theta}} (\tilde{\bold{x}}, i) - \nabla_{\tilde{\bold{x}}} \log p_{\alpha_i} (\tilde{\bold{x}} \vert \bold{x}) \rVert_2^2 \big \rbrack
+\end{equation}
+
+Sau khi giải phương trình \ref{eq:3} để thu được mô hình tối ưu $\bold{s}_{\boldsymbol{\theta}^{\ast}}(\bold{x}, i)$, các mẫu có thể được tạo ra bằng cách bắt đầu từ một nhiễu tuân theo phân phối chuẩn tắc $\bold{x}_N \sim \mathcal{N}(\bold{0}, \bold{I})$ và sử dụng công thức ước lượng xích Markov ngược sau đây:
+
+\begin{equation}
+    \bold{x}_{i-1} = \dfrac{1}{\sqrt{1-\beta_i}} \big( \bold{x}_i + \beta_i \bold{s}_{\boldsymbol{\theta}^{\ast}} (\bold{x}_i, i) \big) + \sqrt{\beta_i} \bold{z}_i, i = N, N-1, \dots, 1
+\end{equation}
+
+Ta gọi phương pháp này là \textit{ancestral sampling}, khi mà phương pháp này thực hiện lấy mẫu từ một mô hình đồ thị $\prod_{i=1}^N p_{\boldsymbol{\theta}} (\bold{x}_{i-1} \vert \bold{x}_i)$.
+Hàm mục tiêu trong công thức \ref{eq:3} là $L_{\mathrm{simple}}$ trong \citep{ho2020denoising} được viết dưới dạng khá tương đồng với công thức \ref{eq:1}.
+Cũng như công thức \ref{eq:1}, công thức \ref{eq:3} cũng là tổng có trọng số của các hàm mục tiêu khớp điểm số khử nhiễu, $\nabla_{\bold{x}}\log p_{\alpha_i}(\bold{x})$.
+Đáng chú ý là trọng số thứ $i$ được đề cập trong công thức \ref{eq:1} và công thức \ref{eq:3} là $\sigma_i^2$ và $(1-\alpha_i)$ liên quan đến các nhân gây xáo trộn tương ứng trong cùng một dạng chức năng:
+$\sigma_i^2 \propto 1/\mathbb{E} \big \lbrack \lVert \nabla_{\bold{x}} \log p_{\sigma_i} (\tilde{\bold{x}} \vert \bold{x}) \rVert_2^2 \big \rbrack$ và $(1-\alpha_i) \propto 1/\mathbb{E} \big \lbrack \lVert \nabla_\bold{x} \log p_{\alpha_i}  (\tilde{\bold{x}} \vert \bold{x})\rVert_2^2 \big \rbrack$
+
+\section{Mô hình sinh dựa trên điểm số với SDE}
+
+Để làm nhiễu hay làm xáo trộn dữ liệu với nhiều mức nhiễu là một chìa khóa dẫn đến thành công của các phương pháp trước đây.
+Ta đề xuất tổng quát hóa ý tưởng này hơn nữa trở thành một số vô hạn các mức nhiễu, chẳng hạn phân phối của dữ liệu bị làm nhiễu biến đổi tuân theo một phương trình SDE khi nhiễu tăng dần lên.
+Tổng quát của khung làm việc của ta được miêu tả trong hình \ref{fig:2}
+
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=\textwidth]{2.png}
+    \caption{\textbf{Tổng quan của một mô hình sinh dựa trên điểm số với phương trình SDE}
+    Ta có thể ánh xạ dữ liệu thành một phân phối nhiễu (phân phối tiên nghiệm) với một phương trình SDE (mục \ref{Pertubring-data-with-SDE}) và đảo ngược phương trình SDE này cho quá trình sinh dữ liệu (mục ).
+    Ta cũng có thể đảo ngược dòng xác suất tương ứng phương trình ODE (mục ) thu được một quá trình tất định lấy mẫu từ cùng phân phối với SDE.
+    Cả phương trình SDE đảo ngược thời gian và dòng xác suất phương trình ODE có thể đạt được bằng các ước lượng điểm số $\nabla_{\bold{x}} \log p_t (\bold{x})$ (mục \ref{Estimating-Scores-For-The-SDE}).}
+    \label{fig:2}
+\end{figure}
+
+\subsection{Làm xáo trộn dữ liệu với phương trình SDE} \label{Pertubring-data-with-SDE}
+
+Mục đích của ta là xây dựng một quá trình khuếch tán $\lbrace \bold{x}(t) \rbrace_{t=0}^T$ được đánh chỉ số bởi một biến thời gian liên tục $t \in \lbrack 0, T \rbrack$ ví dụ $\bold{x}(0) \sim p_0$, giả sử nếu ta có một bộ dữ liệu mà các điểm dữ liệu là độc lập và cùng phân phối, và $\bold{x}(T) \sim p_T$ là một dạng rất dễ xử lý để sinh các mẫu dữ liệu hiệu quả.
+Hay nói cách khác, $p_0$ là phân phối dữ liệu và $p_T$ là phân phối tiên nghiệm.
+Quá trình khuếch tán có thể được mô hình hóa là nghiệm của phương trình Ito SDE:
+
+\begin{equation} \label{eq:5}
+    d \bold{x} = \bold{f} (\bold{x}, t) dt + g(t) d \bold{w}
+\end{equation}
+
+với $\tilde{\bold{w}}$ là một quá trình Wiener chuẩn tắc (hay còn được gọi là chuyển Brown), $\bold{f}(.,t): \mathbb{R}^d \rightarrow \mathbb{R}^d$ là một hàm vector được gọi là hệ số độ trôi của $\bold{x}(t)$ và $g(.): \mathbb{R} \rightarrow \mathbb{R}$ là một hàm vô hướng được gọi là hệ số khuếch tán của $\bold{x}(t)$.
+Để cho thuận tiện cho việc trình bày ta giả sử hệ số khuếch tán là một số vô hướng (thay vì là một ma trận $d \times d$) và không phụ thuộc vào $\bold{x}$, nhưng lý thuyết của ta có thể được tổng quát hóa và vẫn đúng trong trường hợp này (phụ lục ).
+Phương trình SDE có một nghiệm riêng mạnh chừng nào các hệ số vẫn là Lipschitz toàn cục trong cả trạng thái và thời gian \citep{oksendal2003stochastic}.
+Từ sau đây ta ký hiệu $p_t (\bold{x})$ là hàm mật độ xác suất của $\bold{x}(t)$ và sử dụng $p_{st}(\bold{x}(t) \vert \bold{x}(s))$ để ký hiệu nhân chuyển tiếp từ $\bold{x}(s)$ sang $\bold{x}(t)$, với $0 \leq s < s \leq T$.
+
+Thông thường, $p_T$ là một phân phối phi cấu trúc không bao gồm thông tin nào của $p_0$, ví dụ như phân phối Gaussian với trung bình và phương sai cố định.
+Có nhiều cách để thiết kế SDE trong phương trình \ref{eq:5} trong quá trình khuếch tán phân phối dữ liệu thành một phân phối tiên nghiệm cố định.
+Ta cung cấp một số ví dụ trong mục  thu được quá trình tổng quát hóa liên tục của SMLD và DDPM.
+
+\subsection{Sinh mẫu dữ liệu bằng cách đảo ngược phương trình SDE}
+
+Ta bắt đầu từ các mẫu dữ liệu nhiễu $\bold{x}(T) \sim p_T$ và đảo ngược quá trình, ta có thể thu được các mẫu $\bold{x}(0) \sim p_0$.
+Một kết quả đáng chú ý từ \citep{anderson1982reverse} chỉ ra rằng đảo ngược một quá trình khuếch tán cũng là một quá trình khuếch tán, đi ngược theo thời gian bởi một phương trình SDE đảo ngược thời gian:
+
+\begin{equation} \label{eq:6}
+    d \bold{x} = \big \lbrack \bold{f}(\bold{x}, t) - g(t)^2 \nabla_{\bold{x}} \log p_t (\bold{x}) \big \rbrack dt + g(t) d \hat{\bold{w}}
+\end{equation}
+
+với $\hat{\bold{w}}$ là một quá trình Wiener chuẩn tắc khi thời gian đi ngược từ $T$ về $0$, và $dt$ là một vi phân gia số thời gian âm.
+Một khi điểm số của phân phối cận biên $\nabla_{\bold{x}} p_t(\bold{x})$ được biết với mọi $t$, ta có thể thu được quá trình khuếch tán ngược từ phương trình \ref{eq:6} và mô phỏng quá trình này để thu được mẫu dữ liệu từ phân phối $p_0$.
+
+\subsection{Ước lượng điểm số cho phương trình SDE} \label{Estimating-Scores-For-The-SDE}
+
+Điểm số của một phân phối có thể được ước lượng bằng cách huấn luyện một mô hình dựa trên điểm số trên các mẫu với khớp điểm số \citep{hyvarinen2005estimation,song2020sliced}. Để ước lượng $\nabla_{\bold{x}} \log p_t(\bold{x})$, ta có thể huấn luyện một mô hình dựa trên điểm số phụ thuộc vào thời gian $\bold{s}_{\boldsymbol{\theta}}(\bold{x}, t)$ thông qua một tổng quát hóa liên tục từ phương trình \ref{eq:1} và phương trình \ref{eq:3}:
+
+\begin{equation}
+    \boldsymbol{\theta}^{\ast} = \argmin_{\boldsymbol{\theta}} \mathbb{E}_t \Big \lbrace  \lambda(t) \mathbb{E}_{\bold{x}(0)} \mathbb{E}_{\bold{x}(t) \bold{x}(0)} \big \lbrack \lVert \bold{s}_{\boldsymbol{\theta}} (\bold{x}(t), t) - \nabla_{\bold{x}(t)} \log p_{0t} (\bold{x}(t) \vert \bold{x}(0)) \rVert_2^2 \big \lbrack \Big \rbrace
+\end{equation}
 
 \newpage
 \bibliography{iclr2021_conference}
