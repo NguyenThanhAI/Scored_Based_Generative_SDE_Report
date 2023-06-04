@@ -32,6 +32,7 @@
 \usepackage{multirow}
 \usepackage{cancel}
 
+
 \graphicspath{{./figures/}}
 
 \title{Mô hình sinh dựa trên điểm số bằng \\ phương trình vi phân ngẫu nhiên}
@@ -147,7 +148,7 @@ Một xích Markov biến phân theo chiều ngược được tham số hóa v�
 
 Sau khi giải phương trình \ref{eq:3} để thu được mô hình tối ưu $\bold{s}_{\boldsymbol{\theta}^{\ast}}(\bold{x}, i)$, các mẫu có thể được tạo ra bằng cách bắt đầu từ một nhiễu tuân theo phân phối chuẩn tắc $\bold{x}_N \sim \mathcal{N}(\bold{0}, \bold{I})$ và sử dụng công thức ước lượng xích Markov ngược sau đây:
 
-\begin{equation}
+\begin{equation} \label{eq:4}
     \bold{x}_{i-1} = \dfrac{1}{\sqrt{1-\beta_i}} \big( \bold{x}_i + \beta_i \bold{s}_{\boldsymbol{\theta}^{\ast}} (\bold{x}_i, i) \big) + \sqrt{\beta_i} \bold{z}_i, i = N, N-1, \dots, 1
 \end{equation}
 
@@ -254,6 +255,66 @@ Khi $N \rightarrow \infty$, phương trình \ref{eq:10} hội tụ về phương
 \begin{equation} \label{eq:11}
     d \bold{x} = \dfrac{1}{2} \beta(t) \bold{x} dt + \sqrt{\beta(t)} d\bold{w}
 \end{equation}
+
+vì vậy, nhiễu dùng để xáo trộn được dùng trong SMLD và DDPM tương ứng với sự rời rạc hóa của phương trình SDE trong công thức \ref{eq:9} và \ref{eq:11}.
+Một điều thú vị là phương trình SDE của công thức \ref{eq:9} luôn luôn tạo ra một quá trình với phương sai bùng nổ khi $t \rightarrow \infty$, trong khi phương trình ở công thức \ref{eq:11} thu được một quá trình với phương sai không đổi là một khi phân phối ban đầu có phương sai là một (chứng minh ở phụ lục ).
+Vì sự khác biệt này, kể từ đây ta sẽ gọi phương trình ở công thức \ref{eq:9} là Variance Exploding (VE) SDE, và phương trình ở công thức \ref{eq:11} là Variance Preserving (VP) SDE.
+
+Lấy cảm hứng từ VP SDE, ta đề xuất một loại phương trình SDE mới đặc biệt tốt trên độ hợp lý (mục ) được cho bởi công thức:
+
+\begin{equation} \label{eq:12}
+    d \bold{x} = -\dfrac{1}{2} \beta(t) \bold{x} dt + \sqrt{\beta(t) (1-e^{-2\int_{0}^{t} \beta(s)ds} )} d \bold{w}
+\end{equation}
+
+Khi sử dụng cùng $\beta(t)$ và bắt đầu từ cùng một phân phối ban đầu, phương sai của quá trình ngẫu nhiên thu được từ phương trình \ref{eq:12} luôn luôn bị chặn bởi VPSDE tại mỗi bước thời gian trung gian (chứng minh ở phục lục ).
+Vì lý do này, ta đặt tên công thức \ref{eq:12} là sub-VP SDE.
+
+Khi VE, VP, sub-VP SE đều có một độ trôi, nhân làm xáo trộn dữ liệu $p_{0t}(\bold{x}(t) \vert \bold{x}(0))$ tất cả đều có phân phối Gaussian và có thể được tính ở dạng đóng đã được trình bày ở mục \ref{Estimating-Scores-For-The-SDE}.
+Điều này làm việc huấn luyện mô hình với công thức \ref{eq:7} đặc biệt hiệu quả.
+
+\section{Giải phương trình SDE ngược}
+
+Sau khi huấn luyện một mô hình dựa trên điểm số phụ thuộc vào thời gian $\bold{s}_{\boldsymbol{\theta}}$, ta có thể sử dụng mô hình này để xây dựng một phương trình SDE đảo ngược thời gian và sau đó mô phỏng nó với cách tiếp cận phuowg pháp số để sinh ra các mẫu dữ liệu từ phân phối $p_0$.
+
+\subsection{Bộ giải phương trình SDE bằng phương pháp số đa chức năng}
+
+\begin{table}[h!]
+    \centering
+    \caption{So sánh các bộ giải phương trình SDE đảo ngược thời gian khác nhau trên tập CIFAR-10.
+    Vùng tối màu thu được với cùng cách tính toán (số các hàm điểm số).
+    Trung bình và độ lệch tiêu chuẩn được đưa ra trên 5 lần chạy.
+    "P1000" hoặc "P2000": bộ lấy mẫu mà chỉ dự đoán sử dụng 1000 hoặc 2000 bước.
+    "C2000": bộ lấy mẫu chỉ căn chỉnh sử dụng 2000 bước.
+    "PC1000": Bộ lấy mẫu dự đoán căn chỉnh sử dụng 1000 bước dự đoán và 1000 bước căn chỉnh.}
+    \resizebox{\columnwidth}{!}{
+        \begin{tabular}{c|c|c|c|c|c|c|c|c}
+            \hline
+            & \multicolumn{4}{|c|}{Variance Exploding SDE (SMLD)} & \multicolumn{4}{|c}{Variance Preserving SDE (DDPM)} \\
+            \hline
+            FID $\downarrow$ & P1000 & P2000 & C2000 & PC1000 & P1000 & P2000 & C2000 & PC1000 \\
+            \hline
+            ancestral sampling & 4.98 $\pm$ .06 & 4.88 $\pm$ .06 & \multirow{3}{*}{20.43 $\pm$ .07} & \textbf{3.62} $\pm$ \textbf{.03} & 3.24 $\pm$  .02 & 3.24 $\pm$ .02 & \multirow{3}{*}{19.06 $\pm$ .06} & \textbf{3.21} $\pm$ \textbf{.02} \\
+            reverse diffusion & 4.79 $\pm$ .07 & 4.74 $\pm$ .08 & & \textbf{3.60} $\pm$ \textbf{.02} & 3.21 $\pm$  .02 & 3.19 $\pm$ .02 & & \textbf{3.18} $\pm$ \textbf{.01} \\
+            probability flow & 15.41 $\pm$ .15 & 10.54 $\pm$ .08 & & \textbf{3.51} $\pm$ \textbf{.04} & 3.59 $\pm$  .04 & 3.23 $\pm$ .03 & & \textbf{3.06} $\pm$ \textbf{.03} \\
+            \hline
+        \end{tabular}
+    }
+    \label{tab:1}
+\end{table}
+
+Các bộ giải sử dụng phương pháp số tạo ra một quỹ đạo xấp xỉ từ phương trình SDE.
+Tồn tại nhiều phương pháp số đa chức năng để giải phương trình SDE như Euler-Maruyama và phương pháp Runge-Kutta ngẫu nhiên, tương ứng với các cách rời rạc hóa khác nhau của động học ngẫu nhiên.
+Ta có thể áp dụng bất kỳ cách nào cho phương trình SDE đảo ngược thời gian để sinh mẫu dữ liệu.
+
+Ancestral sampling, là phương pháp lấy mẫu của DDPM trong công thức \ref{eq:4} thực tế tương ứng với một phương pháp rời rạc hóa đặc biệt của phương trình VP SDE đảo ngược thời gian (công thức \ref{eq:11}) (phụ lục ).
+Để thu được luật lấy mẫu sử dụng ancestral sampling cho phương trình SDE mới không phải là việc dễ dàng.
+Để khắc phụ điều này, ta đề xuất \textit{bộ lấy mẫu khuếch tán ngược} (chi tiết trong phụ lục ), bộ lấy mẫu này rời rạc hóa phương trình SDE đảo ngược thời gian theo cùng cách với phương trình thuận, và vì vậy có thể đễ dàng thực hiện sử dụng kết quả rời rạc hóa của quá trình thuận
+Hình \ref{tab:1}, bộ lấy mẫu khuếch tán ngược thể hiện tốt hơn một chút so với ancestral sampling cho cả hai mô hình SMLD và DDPM trên CIFAR-10 (mô hình DDPM sử dụng ancestral sampling cũng có thể áp dụng cho mô hình SMLD, xem phụ lục ).
+
+\subsection{Bộ lấy mẫu dự đoán - căn chỉnh}
+
+Không giống với phương trình SDE tổng quát, ta có thêm thông tin có thể sử dụng để cải thiện lời giải.
+Khi ta có một mô hình dựa trên điểm số $\bold{s}_{\boldsymbol{\theta}^{\ast}} (\bold{x}, t)\approx \nabla_{\bold{x}} \log p_t (\bold{x})$
 
 \newpage
 \bibliography{iclr2021_conference}
