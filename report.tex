@@ -314,7 +314,104 @@ Hình \ref{tab:1}, bộ lấy mẫu khuếch tán ngược thể hiện tốt h�
 \subsection{Bộ lấy mẫu dự đoán - căn chỉnh}
 
 Không giống với phương trình SDE tổng quát, ta có thêm thông tin có thể sử dụng để cải thiện lời giải.
-Khi ta có một mô hình dựa trên điểm số $\bold{s}_{\boldsymbol{\theta}^{\ast}} (\bold{x}, t)\approx \nabla_{\bold{x}} \log p_t (\bold{x})$
+Khi ta có một mô hình dựa trên điểm số $\bold{s}_{\boldsymbol{\theta}^{\ast}} (\bold{x}, t)\approx \nabla_{\bold{x}} \log p_t (\bold{x})$, ta có thể sử dụng cách tiếp cận MCMC dựa trên điểm số ví dụ như Langevin MCMC \citep{parisi1981correlation,grenander1994representations} hoặc HMC \citep{neal2011mcmc} để lấy mẫu trực tiếp từ $p_t$ và căn chỉnh lời giải của một bộ giải phương trình SDE bằng phương pháp số.
+
+Cụ thể, tại từng bước thời gian, bộ giải phương trình SDE bằng phương pháp số ban đầu tạo ra một ước lượng của mẫu tại bước tiếp theo, đóng vai trò là một "bộ dự đoán".
+Sau đó, ta dùng MCMC dựa trên điểm số căn chỉnh phân phối cận biên của mẫu đã được ước lượng, đóng vai trò là "bộ căn chỉnh".
+Ý tưởng tương tự với phương pháp dự đoán - căn chỉnh, một họ của các kỹ thuật phương pháp số cho giải hệ phương trình \citep{allgower2012numerical} và ta đặt một tên tương tự cho thuật toán lấy mẫu là bộ lấy mẫu \textit{dự đoán - căn chỉnh}.
+Mã giả được được trình bày ở phụ lục .
+Bộ lấy mẫu PC tổng quát hóa các phương pháp lấy mẫu ban đầu của SMLD và DDPM: các phương pháp trước đây sử dụng một hàm đồng nhất là hàm dự đoán và tôi luyện động học Langevin làm bộ căn chỉnh, trong khi các phương pháp sau sử dụng ancestral sampling là bộ dự đoán và hàm đồng nhất là bộ căn chỉnh.
+
+Ta sẽ thử bộ lấy mẫu PC trên các mô hình SMLD và DDPM (thuật toán và thuật toán trong phụ lục) được huấn luyện với hàm mục tiêu rời rạc ban đầu trong các công thức \ref{eq:1} và \ref{eq:3}.
+Các công thức này cho ta thấy sự phù hợp của bộ lấy mẫu PC với mô hình dựa trên điểm số được huấn luyện với một số bước cố định các mức nhiễu.
+Ta tổng hợp khả năng của các bộ lấy mẫu khác nhau trong bảng \ref{tab:1}, với dòng xác suất là một bộ dự đoán sẽ được trình bày ở trong mục \ref{Probability-Flow-and-Connection-to-Neural-ODEs}.
+Cấu hình chi tiết về các thí nghiệm và các kết quả chi tiết hơn được trình phù ở phụ lục.
+Ta quan sát thấy rằng bộ lấy mẫu khuếch tán ngược luôn luôn tốt hơn so với các phương pháp ancestral sampling, chỉ căn chỉnh (C2000) và kém hơn so với các bộ lấy mẫu khác (PC2000, PC1000) cùng với lượng tính toán.
+(Thực tế, ta cần nhiều bước căn chỉnh hơn trên một mức nhiễu, và vì vậy cần tính toán nhiều hơn để khớp với khả năng của các bộ lấy mẫu khác)
+Với tất cả các bộ dự đoán, thêm một bước căn chỉnh cho từng bước dựa đoán (PC1000) làm tăng khối lượng tính toán lên gấp đôi nhưng luôn luôn cải thiện chất lượng mẫu (so với PC1000).
+Hơn nữa, thông thường việc thêm một bước dự đoán và căn chỉnh thường tốt hơn tăng gấp đôi số bước dự đoán mà không thêm bước căn chỉnh (P2000),
+khi ta luôn phải nội suy giữa những mức nhiễu (chi tiết trong phụ lục) cho các mô hình SMLD/DDPM.
+Trong hình (phụ lục), ta cung cấp thêm so sánh về mặt chất các mô hình cho các hàm mục tiêu trong công thức \ref{eq:7} trên tập LSUN 256 $\times$ 256 và VE SDE, với các bộ lấy mẫu PC vượt trội hơn hẳn các bộ lấy mẫu chỉ dự đoán với cùng một khối lượng tính toán khi ta dùng một số lượng phù hợp các bước căn chỉnh.
+
+\subsection{Dòng xác suất và sự liên kết với các phương trình ODE neuron} \label{Probability-Flow-and-Connection-to-Neural-ODEs}
+
+Các mô hình dựa trên điểm số cho phép phương pháp số khác nhau để giải các phương trình SDE đảo ngược thời gian.
+Với tất cả các quá trình khuếch tán, tồn tại một quá trình tất định tương ứng mà quỹ đạo này chia sẻ cùng một hàm mật độ xác suất cận biên $\lbrace p_t (\bold{x}) \rbrace_{t=0}^T$ cùng với phương trình SDE.
+Quá trình tất định này thỏa mãn một phương trình ODE (chi tiết được trình bày trong phục lục ):
+
+\begin{equation} \label{eq:13}
+    d \bold{x} = \Big \lbrack \bold{f}(\bold{x}, t) - \dfrac{1}{2}g(t)^2 \nabla_{\bold{x}} \log p_t (\bold{x}) \Big \rbrack dt
+\end{equation}
+
+có thể được xác định từ một phương trình SDE khi điểm số đã được biết.
+Ta đặt tên ODE trong công thức \ref{eq:13} là phương trình ODE dòng xác suất.
+Khi hàm điểm số được xấp xỉ bởi một mô hình dựa trên điểm số phụ thuộc vào thời gian, thường là một mạng neuron là một ví dụ của một ODE neuron \citep{chen2018neural}.
+
+\textbf{Tính toán chính xác độ hợp lý} Tận dụng sự liên kết với các phương trình ODE neuron, ta có thể tính hàm mật độ được định nghĩa bởi công thức \ref{eq:13} thông qua sự thay đổi tức thời của các biến trong công thức \citep{chen2018neural}.
+Điều này cho phép ta tính toán được \textit{chính xác độ hợp lý trên bất kỳ dữ liệu đầu vào nào} (chi tiết trong phụ lục).
+Một ví dụ, ta báo cáo hàm âm log của độ hợp lý (negative log-likelihoods - NLLs) được đo trên bits/dim trên tập CIFAR-10 trong bảng \ref{tab:2}.
+Ta tính log của độ hợp lý một cách đồng đều trên dữ liệu đã được giải lượng tự và chỉ so sánh với có các mô hình được đánh giá theo cùng một cách (bỏ qua các mô hình được đánh giá với giải lượng tử hóa biến phân \citep{ho2019flow++} hoặc ữ liệu rời rạc), ngoại trừ với DDPM (L/$L_{\mathrm{simple}}$) mà giá trị ELBO (được gán nhãn với $\ast$) được báo cáo trên tập rời rạc.
+Các kết quả chính:
+
+
+\begin{table}[h!]
+    \centering
+    \caption{NLLs và FIDs (ODE) trên tập CIFAR-10}
+    \begin{tabular}{lcc}
+        \hline
+        Model & NLL Test $\downarrow$ & FID $\downarrow$ \\
+        \hline
+        RealNVP \citep{dinh2016density} & 3.49 & - \\
+        iResNet \citep{behrmann2019invertible} & 3.45 & - \\
+        Glow \citep{kingma2018glow} & 3.35 & - \\
+        MintNet \citep{song2019mintnet} & 3.32 & - \\
+        Residual Flow \citep{chen2019residual} & 3.28 & 46.37 \\
+        FFJORD \citep{grathwohl2018ffjord} & 3.40 & - \\
+        Flow++ \citep{ho2019flow++} & 3.29 & - \\
+        DDPM (L) \cite{ho2020denoising} & $\leq 3.70^{\ast}$  & 13.51 \\
+        DDPM ($L_{\mathrm{simple}}$) \citep{ho2020denoising} & $\leq 3.75^{\ast}$ & 3.17 \\
+        \hline
+        DDPM & 3.28 & 3.37 \\
+        DDPM cont. (VP) & 3.21 & 3.69 \\
+        DDPM cont. (sub-VP) & 3.05 & 3.56 \\
+        DDPM++ cont. (VP) & 3.16 & 3.93 \\
+        DDPM++ cont. (sub-VP) & 3.02 & 3.16 \\
+        DDPM++ cont. (deep, VP) & 3.13 & 3.08 \\
+        DDPM++ cont. (deep, sub-VP) & \textbf{2.99} & \textbf{2.92} \\
+        \hline
+    \end{tabular}
+    \label{tab:2}
+\end{table}
+
+\begin{table}[h!]
+    \centering
+    \caption{Chất lượng các mẫu trên tập CIFAR-10}
+    \begin{tabular}{lcc}
+        \hline
+        Model & FID $\downarrow$ & IS $\uparrow$ \\
+        \hline
+        \textbf{Conditional} & & \\
+        BigGAN \citep{brock2018large} &  14.73 & 9.22 \\
+        StyleGAN2-ADA \citep{karras2020training} & \textbf{2.42} & \textbf{10.14} \\
+        \hline
+        \textbf{Unconditional} & & \\
+        StyleGAN2-ADA \citep{karras2020training} & 2.92 & 9.83 \\
+        NCNS \citep{song2019generative} & 25.32 & 8.87 $\pm$ .12 \\
+        NCNSv2 \citep{song2020improved} & 10.87 & 8.40 $\pm$ .07 \\
+        DDPM \citep{ho2020denoising} & 3.17 & 9.46 $\pm$ .11 \\
+        \hline
+        DDPM++ & 2.78 & 9.64 \\
+        DDPM++ cont. (VP) & 2.55 & 9.58 \\
+        DDPM++ cont. (sub-VP) & 2.61 & 9.56 \\
+        DDPM++ cont. (deep, VP) & 2.41 & 9.68 \\
+        DDPM++ cont. (deep, sub-VP) & 2.41 & 9.57 \\
+        NCSN++ & 2.45 & 9.73 \\
+        NCSN++ cont. (VE) & 2.38 & 9.83 \\
+        NCSN++ cont. (deep, VE) & \textbf{2.20} & \textbf{9.89} \\
+        \hline
+    \end{tabular}
+    \label{tab:3}
+\end{table}
 
 \newpage
 \bibliography{iclr2021_conference}
