@@ -351,7 +351,10 @@ Khi hàm điểm số được xấp xỉ bởi một mô hình dựa trên đi�
 Điều này cho phép ta tính toán được \textit{chính xác độ hợp lý trên bất kỳ dữ liệu đầu vào nào} (chi tiết trong phụ lục).
 Một ví dụ, ta báo cáo hàm âm log của độ hợp lý (negative log-likelihoods - NLLs) được đo trên bits/dim trên tập CIFAR-10 trong bảng \ref{tab:2}.
 Ta tính log của độ hợp lý một cách đồng đều trên dữ liệu đã được giải lượng tự và chỉ so sánh với có các mô hình được đánh giá theo cùng một cách (bỏ qua các mô hình được đánh giá với giải lượng tử hóa biến phân \citep{ho2019flow++} hoặc ữ liệu rời rạc), ngoại trừ với DDPM (L/$L_{\mathrm{simple}}$) mà giá trị ELBO (được gán nhãn với $\ast$) được báo cáo trên tập rời rạc.
-Các kết quả chính:
+Các kết quả chính: (i) Với cùng mô hình DDPM trong \citep{ho2020denoising}, ta thu được bits/dim cao hơn ELBO, khi độ hợp lý của ta là chính xác;
+(ii) Sử dụng cùng cấu trúc, ta huấn luyện mô hình DDPM khác với hàm mục tiêu liên tục trong công thức \ref{eq:7} cũng cải thiện thêm độ hợp lý;
+(iii) với sub-VP SDEs, ta luôn luôn thu được độ hợp lý cao hơn so với VP SDEs;
+(iv) với kiến trúc được cải thiện (ví dụ DDPM++ ở mục ) và sub-VP SDE, ta có thể lập một kỷ lục mới bits/dim là 2.99 trên tập CIFAR-10 giải lượng tử đều ngay cả không sử dụng \textit{huấn luyện cực đại hóa độ hợp lý}.
 
 
 \begin{table}[h!]
@@ -413,6 +416,95 @@ Các kết quả chính:
     \label{tab:3}
 \end{table}
 
+\textbf{Thao tác trên biểu diễn ẩn} Bằng cách kết hợp công thức \ref{eq:13}, ta có thể mã hóa bất kỳ điểm dữ liệu $\bold{x}(0)$ nào vào một không gian ẩn $\bold{x}(T)$.
+Giải mã có thể thu được bằng cách kết hợp phương trình ODE tương ứng cho phương trình SDE đảo ngược thời gian.
+Như đã được thực hiện với các mô hình có thể đảo ngược khác như ODEs neuron và dòng chuẩn hóa \citep{dinh2016density, kingma2018glow}, ta có thể thao tác biểu diễn này cho chỉnh sửa ảnh, như nội suy và chia tỷ lệ nhiệt độ.
+
+\textbf{Mã hóa có thể nhận dạng duy nhất} Không giống như hầu hết các mô hình có thể đảo ngược hiện tại,
+cách mã hóa của ta là có thể nhận diện duy nhất, nghĩa là với dữ liệu huấn luyện phù hợp, kích thước mô hình và độ chính xác tối ưu, mã hóa cho một input được xác định duy nhất bởi phân phối dữ liệu \citep{roeder2021linear}.
+Bởi vì phương trình SDE thuận, công thức \ref{eq:5} không có tham số huấn luyện được, và tương ứng với dòng xác suất ODE, công thức \ref{eq:13} cho ta cùng quỹ đạo khi cho ước lượng điểm số hoàn hảo.
+Ta cung cấp các kiểm chứng thực nghiệm bổ sung về tính chất này ở phục lục .
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=0.9\linewidth]{figures/3.png}
+    \caption{\textbf{ODE dòng xác suất cho phép lấy mẫu nhanh} với độ dài bước thích nghi và độ chính xác số học thích nghi thay đổi (\textit{hình trái}), giảm số lần đánh giá hàm điểm số (NFE) mà không làm ảnh hưởng đến chất lượng (\textit{hình giữa}).
+    Ánh xạ ngược từ không gian ẩn sang ảnh cho phép nội suy (\textit{hình phải})}
+    \label{fig:3}
+\end{figure}
+
+\textbf{Lấy mẫu hiệu quả} Với một ODE neuron, ta có thể lấy mẫu $\bold{x}(0) \sim p_0$ bằng cách giải phương trình ở công thức \ref{eq:13} từ các điều kiện $\bold{x}(T) \sim p_T$.
+Sử dụng một chiến lược rời rạc hóa cố định ta có thể tạo ra các mẫu có khả năng cạnh tranh cao, đặc biệt khi sử dụng cùng vơi shbooj hiệu chỉnh (bảng \ref{tab:1}, "bộ lấy mẫu dòng xác suất", chi tiết ở phụ lục).
+Sử dụng một bộ giải phương trình ODE dạng hộp đen \citep{dormand1980family} không những chỉ tạo ra những mẫu chất lượng cao (\ref{tab:2}, chi tiết ở phụ lục ) mà còn cho phép ta đánh đổi độ chính xác cho tính hiệu quả.
+Với khả năng chống chịu sai lệch cao hơn, số hàm đánh giá có thể được giảm hơn 90 \% mà không cần làm ảnh hưởng chất lượng của mẫu (hình \ref{fig:3})
+
+\subsection{Các cải thiện về kiến trúc của mô hình}
+
+Ta khám phá nhiều thiết kế kiến trúc mới cho mô hình dựa trên điểm số sử dụng cả VE và VP SDEs (chi tiết ở phụ lục ), với ta huấn luyện các mô hình với các hàm mục tiêu rời rạc như SMLD/DDPM.
+Ta áp dụng trực tiếp các kiến trúc của VP SDEs cho sub-VP SDEs vì tính tương đồng của hai mô hình này.
+Kiến trúc tối ưu ta thấy cho VE SDE được gọi là NCSN++ thu được FID là 2.45 trên CIFAR-10, với bộ lấy mẫu PC, trong khi kiến trúc tối ưu cho VP SDE được gọi là DDPM++ đạt được kết quả với FID là 2.78.
+
+Bằng cách chuyển sang sử dụng công thức huấn luyện liên tục ở công thức \ref{eq:7} và tăng độ sâu của mạng, ta có thể cải thiện hơn nữa chất lượng của mẫu cho tất cả các mô hình.
+Các kiến trúc được chọn được ký hiệu là NCSN++ cont. và DDPM++ cont. trong bảng \ref{tab:3} lần lượt cho VE và VP/sub-VP SDEs.
+Các kết quả được báo cáo trong bảng \ref{tab:3} tương ướng với các checkpoint với FID nhỏ nhất trong quá trình huấn luyện, với các mẫu được tạo ra với bộ lấy mẫu PC.
+Ngược lại, chỉ số FID và các giá trị NLL trong bảng \ref{tab:2} được báo cáo cho checkpoint cuối cùng trong quá trình huấn luyện, và các bộ lấy mẫu thu được với một bộ giải phương trình ODE là một hộp đen.
+Như được trình bày trong b ảng \ref{tab:3}, VE SDEs thường cho các mẫu có chất lượng tốt hơn VP/sub-VP SDE.
+Điều này cho thấy những người người làm thực tiễn có xu hướng thích làm thí nghiệm với các phương trình ngẫu nhiên SDEs khác nhau cho nhiều phạm vi dữ liệu và kiến trúc.
+
+Mô hình cho mẫu chất lượng tốt nhất là NCSN++ cont. (deep, VE), có chiều sâu gấp đôi và tạo kỷ lục mới cho cả inception score và FID cho bài toán sinh mẫu không có điều kiện trên tập CIFAR-10.
+Điều khá ngạc nhiên là ta có thể đạt được FID tốt hơn các mô hình sinh có điều kiện tốt nhất trước đây mà không cần dữ liệu được gán nhãn.
+Kết hợp tất cả các cải tiến lại, ta cũng thu được tập mẫu với độ chân thực cao trên tập CelebA-HQ 1024 $\times$ 1024 từ các mô hình dựa trên dựa trên điểm số (phụ lục ).
+Mô hình tốt nhất của ta cho độ hợp lý là DDPM++ cont. (deep, sub VP), cũng chiều sâu gấp đôi và thu được log của độ hợp lý là 2.99 bits/dim với hàm mục tiêu liên tục trong công thức \ref{eq:7}.
+Với những gì ta biết, đây là độ hợp lý cao nhất trên tập CIFRA-10 được lấy mẫu đều.
+
+\section{Sinh mẫu có điều khiển}
+
+Cấu trúc liên tục của khung làm việc của ta cho phép ta không chỉ sinh ra các mẫu dữ liệu từ phân phối $p_0$ mà còn từ phân phối $p_0 (\bold{x}(0) \vert \bold{y})$ nếu $p_t (\bold{y} \vert \bold{x}(t))$ biết.
+Khi được cho trước một phương trình SDE thuận trong công thức \ref{eq:5}, ta có thể lấy mẫu từ $p_t(\bold{x}(t) \vert \bold{y})$ bằng cách bắt đầu từ $p_T (\bold{x}(T) \vert \bold{y})$ và giải phương trình SDE đảo ngược thời gian có điều kiện:
+
+\begin{equation} \label{eq:14}
+    d \bold{x} = \lbrace \bold{f}(\bold{x}, t) - g (t)^2 \lbrack \nabla_{\bold{x}} \log p_t(\bold{x}) + \nabla_{\bold{x}} \log p_t (\bold{y} \vert \bold{x}) \rbrack \rbrace dt + g(t) d \bar{\bold{w}}
+\end{equation}
+
+Tổng quát, ta có thể sử dụng công thức \ref{eq:14} để giải một lớp lớn các \textit{bài toán ngược} với mô hình sinh dựa trên điểm số,
+một khi được biết một ước lượng của gradient của quá trình thuận $\nabla_{\bold{x}} \log p_t (\bold{y} \vert \bold{x}(t))$.
+Trong một số trường hợp, ta có thể huấn luyện một mô hình riêng biệt để học quá trình thuận $p_t(\bold{y} \vert \bold{x}(t))$ và tính gradient của quá trình này.
+Mặt khác, ta có thể ước lượng gradient với kinh nghiệm và kiến thức chuyên gia về một miền dữ liệu.
+Ở phụ lục , ta cung cấp các phương pháp được ứng dụng rộng rãi để thu được những ước lượng mà không cần huấn luyện mô hình phụ.
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=0.9\linewidth]{figures/4.png}
+    \caption{\textit{Hình trái:} Các mẫu được tạo ra dựa trên điều kiện về lớp trên tập CIFAR-10 32 $\times$ 32.
+    Bốn hàng đầu tiên là oto và bốn hàng cuối là ngựa.
+    \textit{Hình phải:} Bài toán inpainting (hai hàng đầu) và bài toán tô màu (hai hàng cuối) kết quả trên tập LSUN 256 $\times$ 256.
+    Cột đầu tiên là ảnh gốc, cột thứ hai là ảnh bị gán mặt nạ hoặc chuyển sang ảnh xám, các cột còn lại là các mẫu ảnh được hoàn thiện hoặc được tô màu.}
+    \label{fig:4}
+\end{figure}
+
+Ta xét ba ứng dụng của bài toán sinh mẫu có điều khiển với các cách tiếp cận:
+sinh mẫu có điều kiện dựa trên lớp, xóa một phần ảnh và tô màu.
+Khi $\bold{y}$ biểu diễn nhãn lớp, ta có thể huấn luyện một bộ phân loại phụ thuộc vào thời gian $p_t(\bold{y} \vert \bold{x}(t))$ cho bài toán lấy mẫu điều kiện trên lớp.
+Khi phương trình thuận SDE dễ giải, ta có thể dễ dàng tạo ra dữ liệu huấn luyện $(\bold{x}(t), \bold{y})$ cho bộ phân loại phụ thuộc vào thời gian bởi lấy mẫu ban đầu $\bold{x}(0), \bold{y}$ từ tập dữ liệu và sau đó lấy mẫu $\bold{x}(t) \sim p_{0t} (\bold{x}(t) \vert \bold{x}(0))$.
+Sau đó, ta có thể sử dụng một sự kết ợp của các hàm mất mát cross-entropy trên các bước thời gian khác nhau, như công thức \ref{eq:7}, để huấn luyện bộ phân loại phụ thuộc theo thời gian $p_t(\bold{y} \vert \bold{x}(t))$.
+Ta cung cấp các mẫu được sinh ra có điều kiện dựa trên lớp trên tập CIFAR-10 ở hình \ref{fig:4} (hình trái) và các thông tin chi tiết hơn về kết quả ở phụ lục .
+
+Xóa một phần thông tin ảnh là một trường hợp đặc biệt của lấy mẫu có điều kiện.
+Giả sử ta có một điểm dữ liệu không hoàn chỉnh $\bold{y}$ với chỉ một tập con, $\Omega(\bold{y})$ biết trước.
+Lượng dữ liệu bị xóa từ ảnh để lấy mẫu từ $p(\bold{x}(0) \vert \Omega(\bold{y}))$, ta có thể thực hiện sử dụng một mô hình sinh không có điều kiện (xem phụ lục ).
+Bài toán tô màu là một trường hợp đặc biệt của xóa một phần thông tin ảnh, ngoại trừ chiều dữ liệu đã biết.
+Ta có thể chiều dữ liệu với một phép biến đổi tuyến tính trực giao và thực hiện xóa thông tin ảnh trong không gian đã bị biến đổi (chi tiết ở trong phụ lục ).
+Hình \ref{fig:4} (bên phải) cho biết kết quả cho bài toán xóa thông tin ảnh và tô màu thu được với mô hình dựa trên điểm số phụ thuộc vào thời gian không có điều kiện.
+
+\section{Kết luận}
+
+Ta đã trình bày một khung làm việc cho các mô hình sinh dựa trên điểm số trên các phương trình vi phân ngẫu nhiên SDEs.
+Công trình của ta cho phép việc hiểu sâu hơn của các cách tiếp cận đã tồn tại, các thuật toán lấy mẫu mới, tính chính xác độ hợp lý, mã hóa có thể nhận dạng duy nhất, thao tác trên không gian ẩn và mang lại khả năng sinh dữ liệu của mô hình sinh dựa trên điểm số.
+
+Trong khi đó phương pháp tiếp cận ta đề xuất cải thiện các kết quả và cho phép lấy mẫu hiệu quả hơn, nhưng tốc độ lấy mẫu vẫn chậm hơn GANs \citep{goodfellow2020generative} trên cùng các tập dữ liệu.
+Nhận biết các cách kết hợp quá trình huấn luyện ổn định của các mô hình sinh dựa trên điểm số kết hợp với lấy mẫu nhanh của các mô hình ngầm định như GANs vẫn là một hướng nghiên cứu quan trọng.
+Hơn nữa, độ rộng của bộ lấy mẫu có thể sử dụng khi biết số siêu tham số của hàm điểm số.
+các công trình trong tương lai có thể tận dụng từ các phương pháp đã được cải thiện để tự động lựa chọn và tinh chỉnh các siêu tham số cũng như các khám phá mở rộng dựa trên những giá trị và những hạn chế của nhiều phương pháp lấy mẫu khác nhau.
 \newpage
 \bibliography{iclr2021_conference}
 \bibliographystyle{iclr2021_conference}
