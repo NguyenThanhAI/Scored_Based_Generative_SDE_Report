@@ -509,4 +509,42 @@ các công trình trong tương lai có thể tận dụng từ các phương ph
 \bibliography{iclr2021_conference}
 \bibliographystyle{iclr2021_conference}
 
+\newpage
+
+\appendix
+
+Ta trình bày một số phụ lục với các chi tiết bổ sung, chứng minh công thức và kết quả.
+Khung làm việc của ta cho phép phương trình SDE tổng quan với các hệ số khuếch tán có giá trị dạng ma trận phụ thuộc vào trạng thái, trong đó ta cung cấp một số nhận xét chi tiết trong phụ lục .
+Ta cung cấp chứng minh chi tiết của VE, VP, và sub-VP SDEs trong phụ lục , và ta thảo luận cách sử dụng từ quan điểm thực tiễn ở phụ lục .
+Ta xây dựng công thức dòng xác suất trong phụ lục , bao gồm chứng minh thu được công thức dòng xác suất của phương trình ODE (phụ lục ), tính toán chính xác độ hợp lý (phụ lục ), lấy mẫu dòng xác suất với chiến lược rời rạc hóa cố định (phụ lục ),
+lấy mẫu bằng bộ giải phương trinh ODE là một hộp đen (phụ lục ), và xác minh các thử nghiệm trên mã hóa có thể nhận dạng duy nhất (phụ lục ).
+Ta cung cấp mô tả đầy đủ về bộ lấy mẫu quá trình khuếch tán ngược trong phụ lục ,
+bộ lấy mẫu ancestral loại DDPM cho mô hình SMLD trong phụ lục , và bộ lấy mẫu dự đoán - hiệu chỉnh trong phụ lục .
+Ta giải thích các kiến trúc của mô hình và các cài đặt thử nghiệm chi tiết trong phụ lục ,
+với các mẫu độ phân giải 1024 $\times$ 1024 trên tập CelebA-HQ.
+Cuối cùng, ta trình bày chi tiết về các thuật toán sinh mẫu có điều khiển trong phụ lục  và bao gồm các kết quả mở rộng cho sinh dữ liệu dựa trên lớp (phụ lục ),
+bài toán tô màu (phụ lục ) và chiến lực cho giải bài toán ngược tổng quát (phụ lục ).
+
+\section{Khung làm việc cho phương trình SDE tổng quát}
+
+Trong phần nội dung chính, ta đã giới thiệu khung làm việc dựa trên phương trình SDE ở công thức \ref{eq:5} với hệ số khuếch tán độc với $\bold{x}(t)$.
+Cho thấy rằng khung làm việc của ta có thể mở rộng với những tham số khuếch tán tổng quát hơn.
+Ta có thể xem xét phương trình SDEs với dạng sau:
+
+\begin{equation} \label{eq:15}
+    d \bold{x} = \bold{f} (\bold{x}, t) dt + \bold{G} (\bold{x}, t) d\bold{w}
+\end{equation}
+
+với $\bold{f}(., t): \mathbb{R}^d \rightarrow \mathbb{R}^d$ và $\bold{G}(., t): \mathbb{R}^d \rightarrow \mathbb{R}^{d \times d}$.
+Ta sử dụng giải thích Ito về SDEs xuyên suốt công trình này.
+
+Theo \citep{anderson1982reverse}, phương trình SDE đảo ngược thời gian được cho bởi công thức (công thức \ref{eq:6}):
+
+\begin{equation} \label{eq:16}
+    d \bold{x} = \lbrace \bold{f}(\bold{x}, t) - \nabla . \lbrack \bold{G}(\bold{x}, t) \bold{G}(\bold{x}, t)^T \rbrack - \bold{G}(\bold{x}, t) \bold{G}(\bold{x}, t)^T \nabla_{\bold{x}} \log p_t(\bold{x}) \rbrace dt + \bold{G}(\bold{x}, t) d\bar{\bold{w}}
+\end{equation}
+
+với ta định nghĩa $\nabla . \bold{F}(\bold{x})$
+
+
 \end{document}
