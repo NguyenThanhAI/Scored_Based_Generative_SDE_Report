@@ -645,18 +645,267 @@ Hơn nữa, quá trình có phương sai đơn vị và là hằng số với m�
 Khi VP SDE có độ trôi và các hệ số khuếch tán là affine, ta có thể sử dụng công thức 5.51 trong \citep{sarkka2019applied} để thu được phương trình ODE chi phối sự phá triển của phương sai:
 
 \begin{equation*}
-    \dfrac{d \Sigma_{VP}(t)}{dt} = \beta(t) (\bold{I} - \Sigma_{VP}(t))
+    \dfrac{d \Sigma_{\mathrm{VP}}(t)}{dt} = \beta(t) (\bold{I} - \Sigma_{\mathrm{VP}}(t))
 \end{equation*}
 
-với $\Sigma_{VP}(t) := \Cov \lbrack \bold{x}(t) \rbrack$ với $\lbrace \bold{x}(t) \rbrace_{t=0}^1$ thỏa mãn một phương trình VP SDE.
+với $\Sigma_{\mathrm{VP}}(t) := \Cov \lbrack \bold{x}(t) \rbrack$ với $\lbrace \bold{x}(t) \rbrace_{t=0}^1$ thỏa mãn một phương trình VP SDE.
 Giải phương trình ODE này, ta thu được:
 
-\begin{equation}\label{eq:26}
-    \Sigma_{VP}(t) = \bold{I} + e^{\int_{0}^t - \beta(s)ds} (\Sigma_{VP}(t) - \bold{I})
+\begin{equation} \label{eq:26}
+    \Sigma_{\mathrm{VP}}(t) = \bold{I} + e^{\int_{0}^t - \beta(s)ds} (\Sigma_{\mathrm{VP}}(t) - \bold{I})
 \end{equation}
 
-Ta nhận thấy rất rõ ràng rằng $\Sigma_{VP}(t)$ luôn luôn bị chặn khi cho trước $\Sigma_{VP}(0)$.
-Hơn nữa, $\Sigma_{VP}(t) \equiv \bold{I}$ nếu $\Sigma_{VP}(0) = \bold{I}$.
-Bởi vì sự khác biệt này, ta đặt tên công thức \ref{eq:9} là Variance Exploding (VE) SDE và công thức \ref{eq:11} là Variance Preserving (VP) SDE/
+Ta nhận thấy rất rõ ràng rằng $\Sigma_{\mathrm{VP}}(t)$ luôn luôn bị chặn khi cho trước $\Sigma_{VP}(0)$.
+Hơn nữa, $\Sigma_{\mathrm{VP}}(t) \equiv \bold{I}$ nếu $\Sigma_{VP}(0) = \bold{I}$.
+Bởi vì sự khác biệt này, ta đặt tên công thức \ref{eq:9} là Variance Exploding (VE) SDE và công thức \ref{eq:11} là Variance Preserving (VP) SDE.
 
+Được truyền cảm hứng từ VP SDE, ta đề xuất một phương trình SDE mới được gọi là sub-VP SDE:
+
+\begin{equation} \label{eq:26}
+    d \bold{x} = - \dfrac{1}{2} \beta(t) \bold{x} d t + \sqrt{\beta(t) ( 1 - e^{-2\int_{0}^t \beta(s)ds})} d \bold{w}
+\end{equation}
+
+Với độ lệch tiêu chuẩn, ta dễ ràng chỉ ra rằng $\mathbb{E} \lbrack \bold{x}(t) \rbrack$ là như sau với VP và sub-VP SDE, hàm phương sai của sub-VP SDE khác với VP SDE:
+
+\begin{equation} \label{eq:27}
+    \Sigma_{\mathrm{sub-VP}}(t) = \bold{I} + e^{-2\int_{0}^t \beta(s)ds} \bold{I} + e^{-\int_{0}^t \beta(s)ds} (\bold{\Sigma}_{\mathrm{sub-VP}}(0) - 2 \bold{I})
+\end{equation}
+
+với $\Sigma_{\mathrm{sub-VP}}(t):=\Cov \lbrack \bold{x}(t) \rbrack$  cho một tiến trình $\lbrace \bold{x}(t) \rbrace_{t=0}^1$ thu được bằng cách giải phương trình ở công thức \ref{eq:27}.
+Hơn nữa, ta quan sát (i) $\Sigma_{\mathrm{sub-VP}}(t) \prec \Sigma_{\mathrm{VP}}(t)$ với mọi $t \leq 0$ với $\Sigma_{\mathrm{sub-VP}}(0) = \Sigma_{\mathrm{VP}}(0)$ và $\beta(s)$ được chia sẻ;
+(ii) $\lim_{t \rightarrow \infty} \Sigma_{\mathrm{sub-VP}}(t) = \lim_{t \rightarrow \infty} \Sigma_{\mathrm{VP}}(t) = \bold{I}$ nếu $\lim_{t\rightarrow \infty} \beta(s) ds = \infty$.
+Đây là lý do vì sao ta đặt tên công thức \ref{eq:27} là sub-VP SDE vì phương sai luôn luôn có cận trên bởi phương trình VP SDE tương ứng.
+Sau được chứng minh việc sử dụng sub-VP SDEs cho mô hình sinh dựa trên điểm số khi có thể làm xáo trộn bất kỳ phân phối dữ liệu nào về phân phối chuẩn tắc trong các điều kiện phù hợp như VP SDEs
+
+VE, VP và sub-VP SDEs tất cả đều có hệ số trôi affine.
+Vì vậy, nhân làm xáo trộn $p_{0t}(\bold{x}(t) \vert \bold{x}(0))$ tất cả đều có phân phối chuẩn và có thể được tính sử dụng các công thức 5.50 và 5.51 trong \citep{sarkka2019applied}:
+
+\begin{equation} \label{eq:29}
+    \begin{aligned}
+        p_{0t}(\bold{x}(t) \vert \bold{x}(0)) = \begin{cases}
+            \mathcal{N}(\bold{x}(t); \bold{x}(0), \lbrack \sigma^2(t) - \sigma^2(0) \rbrack \bold{I}) &(\text{VE SDE}) \\
+            \mathcal{N}(\bold{x}(t); \bold{x}(0) e^{-\dfrac{1}{2}\int_0^t \beta(s)ds}, \bold{I} - \bold{I} e^{-\int_0^t \beta(s)ds}) &(\text{VP SDE}) \\
+            \mathcal{N}(\bold{x}(t); \bold{x}(0) e^{-\dfrac{1}{2}\int_0^t \beta(s)ds}, \lbrack 1 - e^{-\int_0^t \beta(s) ds} \rbrack^2 \bold{I}) &(\text{sub-VP SDE})
+        \end{cases}
+    \end{aligned}
+\end{equation}
+
+Như vậy kết quả là tất cả các phương trình SDE được giới thiệu ở đây đều có thể được huấn luyện một cách hiệu quả với hàm mục tiêu ở công thức \ref{eq:7}
+
+\section{Các phương trình SDEs}
+
+Dưới đây ta sẽ thảo luận về khởi tạo của VE và VP SDE mà rời rạc hóa mang lại các mô hình SMLD và DDPM, và sub-VP SDE cụ thể được sử dụng trong thử nghiệm của ta.
+Trong SMLD, các ngưỡng nhiễu $\lbrace \sigma_i \rbrace_{i=1}^N$ thường là một dãy hình học với $\sigma_{\min}$ được cố định là 0.01 và $\sigma_{\max}$ được chọn theo kỹ thuật 1 trong \citep{song2020improved}.
+Thông thường, mô hình SMLD chuẩn hóa ảnh đầu vào trong khoảng $\lbrack 0, \rbrack$.
+Khi $\lbrace \sigma \rbrace_{i=1}^N$ là một dãy hình học, ta có $\sigma\big( \dfrac{i}{N} \big)=\sigma_i=\sigma_{\min} \Big( \dfrac{\sigma_{\max}}{\sigma_{\min}} \Big)^{\dfrac{i-1}{N-1}}$ với $i=1, 2, \dots, N$.
+Trong giới hạn $N \rightarrow \infty$, ta có $\sigma(t) = \sigma_{\min} \Big( \dfrac{\sigma_{\max}}{\sigma_{\min}} \Big)^t$ với $t \in \left ( 0, 1 \right ]$.
+Phương trình VE SDE tương ứng là:
+
+\begin{equation} \label{eq:30}
+    d \bold{x} = \sigma_{\min} \Big( \dfrac{\sigma_{\max}}{\sigma_{\min}} \Big)^t \sqrt{2 \log \dfrac{\sigma_{\max}}{\sigma_{\min}}} d \bold{x}, t \in \left ( 0, 1 \right ]
+\end{equation}
+
+và nhân gây xáo trộn có thể thu được qua công thức \ref{eq:29}:
+
+\begin{equation} \label{eq:31}
+    p_{0t}(\bold{x} (t) \vert \bold{x}(0)) = \mathcal{N} \Bigg ( \bold{x}(t); \bold{x}(0), \sigma_{\min}^2 \Big( \dfrac{\sigma_{\max}}{\sigma_{\min}} \Big)^{2t} \bold{I} \Bigg), t \in \left ( 0, 1 \right ]
+\end{equation}
+
+Một điều khá thú vị là khi $t=0$, theo định nghĩa $\sigma(0) = \sigma_0 = 0$(theo quy ước ở công thức \ref{eq:20}), nhưng $\sigma(0^+):=\lim_{t \rightarrow 0^+}\sigma(t)= \sigma_{\min} \neq 0$.
+Mặt khác, $\sigma(t)$ cho SMLD không khả vi do $\sigma(0) \neq \sigma(0^+)$ làm cho VE SDE tỏng công thức \ref{eq:21} không xác định với $t=0$.
+Trong thực tế, ta tránh vấn đề này bằng cách luôn luôn giải phương trình SDE và dòng xác suất tương ứng ODE trong khoảng $t \in \lbrack \epsilon, 1 \rbrack$ với một hằng số nhỏ $\epsilon > 0$ và ta sử dụng $\epsilon = 10^{-5}$ trong các thử nghiệm VE SDE.
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=0.9\linewidth]{figures/5.png}
+    \caption{Các nhân gây xáo trộn rời rạc theo thời gian và phiên bản tổng quát dạng liên tục khớp với nhau một cách chính xác.
+    Hình bên trái so sánh phương sai của nhân gây xáo trộn SMLD và VE SDE.
+    Hình ở giữa so sánh hệ số nhân của trung bình của nhân gây xáo trộn của DDPM và VP SDE.
+    Hình bên phải so sánh phương sai của nhân gây xáo trộn cho DDPM và VP SDE.}
+    \label{fig:5}
+\end{figure}
+
+Với mô hình DDPM, $\lbrace \beta_i \rbrace_{i=1}^N$ thường là một dãy số học với $\beta_i = \dfrac{\bar{\beta}_{\min}}{N} + \dfrac{i-1}{N(N-1)}(\bar{\beta}_{\max}-\bar{\beta}_{\min})$ với $i=1, 2, \dots, N$.
+Vì vậy, $\beta(t) = \bar{\beta}_{\min} + t (\bar{\beta}_{\max} - \bar{\beta}_{\min})$ với $t \in \lbrack 0, 1 \rbrack$ trong giới hạn $N \rightarrow \infty$.
+Tương với với khởi tạo sau của VP SDE:
+
+\begin{equation} \label{eq:32}
+    d \bold{x} = -\dfrac{1}{2} \big( \bar{\beta}_{\min} + t (\bar{\beta}_{\max} - \bar{\beta}_{\min})) \bold{x} dt + \sqrt{\bar{\beta}_{\min} + t (\bar{\beta}_{\max} - \bar{\beta}_{\min})} d \bold{w}, t \in \lbrack 0, 1 \rbrack
+\end{equation}
+
+với $\bold{x}(0) \sim p_{\mathrm{data}}(\bold{x})$.
+Trong thử nghiệm của ta, ta đặt $\bar{\beta}_{\min}=0.1$ và $\bar{\beta}_{\max}=20$ để khớp với cài đặt trong \citep{ho2020denoising}.
+Nhân gây xáo trộn được cho bởi công thức:
+
+\begin{equation} \label{eq:32}
+    p_{0t} (\bold{x} \vert \bold{x}(0)) = \mathcal{N} \Big( \bold{x}(t); e^{-\dfrac{1}{4}t^2 (\bar{\beta}_{\max} - \bar{\beta}_{\min})-\dfrac{1}{2}t \bar{\beta}_{\min}} \bold{x}(0), \bold{I} - \bold{I} e^{-\dfrac{1}{2}t^2 (\bar{\beta}_{\max} - \bar{\beta}_{\min}) - t \bar{\beta}_{\min}} \Big)
+\end{equation}
+
+Đối với DDPM, không có vấn đề gián đoạn với VP SDE tuy nhiên có các vấn đề không ổn định số học cho quá trình huấn luyện và lấy mẫu tại $t=0$ vì hiện tượng triệt tiêu phương sai của $\bold{x}(t)$ khi $t \rightarrow 0$.
+Vì vậy, cũng như VE SDE, ta chỉ tính toán ở khoảng $t \in \lbrack \epsilon, 1 \rbrack$ với một số $\epsilon > 0$ nhỏ.
+Khi lấy mẫu, ta chọn $\epsilon = 10^{-3}$ nê phương sai của $\bold{x}(\epsilon)$ trong VP SDE khớp với phương sai của $\bold{x}_1$ trong DDPM.
+Khi huấn luyện và tính độ hợp lý, ta chọn $\epsilon = 10^{-5}$ về mặt thực nghiệm cho kết quả tốt hơn.
+
+Để kiểm tra tính đúng đắn của phương trình SDE tổng quát đối với SMLD và DDPM, ta so sánh nhân gây xáo trộn của SDÉ và xích Markov rời rạc ban đầu ở hình \ref{fig:5}.
+Mô hình SMLD và DDPM đều sử dụng $N=1000$ ngưỡng nhiễu.
+Đối với SMLD, ta chỉ cần so sánh phương sai của nhân gây xáo trộn khi cùng trung bình.
+Đối với DDPM, ta so sánh hệ số nhân của trung bình và phương sai.
+Như ở trong hình \ref{fig:5}, nhân gây xáo trộn rời rạc của mô hình SMLD và DDPM rất khớp với nhân gây xáo trộn thu được từ VE và VP SDE.
+
+\begin{equation}
+    p_{0t}(\bold{x}(t) \vert \bold{x}(0)) = \mathcal{N} \Big( \bold{x}(t); e^{-\dfrac{1}{4}t^2 (\bar{\beta}_{\max} - \bar{\beta}_{\min}) - \dfrac{1}{2}t\bar{\beta}_{\min}} \bold{x}(0), \lbrack 1 - e^{-\dfrac{1}{2}t^2 (\bar{\beta}_{\max} - \bar{\beta}_{\min} - t\bar{\beta}_{\min})} \rbrack^2 \bold{I} \Big)
+\end{equation}
+
+Ta cũng chỉ tính toán trên khoảng $\lbrack \epsilon, 1 \rbrack$ đối với VP SDE.
+
+Về mặt thực nghiệm, ta quan sát một số $\epsilon$ nhỏ hơn về mặt tổng quát thu được độ hợp lý tốt hơn với tất cả các SDE.
+Khi lấy mẫu, rất quan trọng khi sử dụng một số $\epsilon$ hợp lý để cho kết quả Inception và FID tốt hơn mặc dù đối với nhiều giá trị $\epsilon$ khác nhau các mẫu nhìn rất tương đương đối với mắt người. 
+
+
+\section{Dòng xác suất phương trình ODE}
+
+\subsection{Diễn giải công thức}
+
+Ý tưởng của dòng xác suất phương trình ODE được lấy cảm hứng bởi \citep{maoutsa2020interacting} và ta có thể tìm thấy một vài trường hợp đơn giản hóa trong công trình này.
+Tiếp theo ta sẽ cung cấp diễn giải công thức cho phương trình ODE tổng quát ở công thức \ref{eq:17}.
+Ta xét phương trình SDE trong công thức \ref{eq:15} có dạng dưới đây:
+
+\begin{equation*}
+    d \bold{x} = \bold{f} (\bold{x}, t) dt + \bold{G}(\bold{x}, t) d \bold{w}
+\end{equation*}
+
+với $\bold{f}(., t): \mathbb{R}^d \rightarrow \mathbb{R}^d$ và $\bold{G}(., t): \mathbb{R}^d \rightarrow \mathbb{R}^{d\times d}$.
+Hàm mật độ xác suất cận biên $p_t(\bold{x}(t))$ tiến triển theo phương trình Kolmogorov thuận (phương trình Fokker-Plank) \citep{oksendal2003stochastic}
+
+\begin{equation} \label{eq:35}
+    \dfrac{\partial p_t(\bold{x})}{\partial t} = - \sum_{i=1}^d \dfrac{\partial}{\partial x_i} \lbrack f_i (\bold{x}, t)p_t(\bold{x}) \rbrack + \dfrac{1}{2} \sum_{i=1}^d \sum_{j=1}^d \dfrac{\partial^2}{\partial x_i \partial x_j} \Big \lbrack \sum_{k=1}^d G_{ik} (\bold{x}, t) G_{jk}(\bold{x}, t) p_t (\bold{x}) \Big \rbrack
+\end{equation}
+
+Ta có thể viết lại công thức \ref{eq:35} để thu được:
+
+\begin{equation} \label{eq:36}
+    \begin{aligned}
+        \dfrac{\partial p_t(\bold{x})}{\partial t} &= - \sum_{i=1}^d \dfrac{\partial}{\partial x_i} \lbrack f_i (\bold{x}, t)p_t(\bold{x}) \rbrack + \dfrac{1}{2} \sum_{i=1}^d \sum_{j=1}^d \dfrac{\partial^2}{\partial x_i \partial x_j} \Big \lbrack \sum_{k=1}^d G_{ik} (\bold{x}, t) G_{jk}(\bold{x}, t) p_t (\bold{x}) \Big \rbrack \\
+        &= - \sum_{i=1}^d \dfrac{\partial}{\partial x_i} \lbrack f_i (\bold{x}, t)p_t(\bold{x}) \rbrack + \dfrac{1}{2} \sum_{i=1}^d \dfrac{\partial}{\partial x_i} \Big \lbrack \dfrac{\partial}{\partial x_j} \Big \lbrack \sum_{k=1}^d G_{ik} (\bold{x}, t) G_{jk}(\bold{x}, t) p_t (\bold{x}) \Big \rbrack \Big \rbrack
+    \end{aligned}
+\end{equation}
+
+Ta cần chú ý rằng:
+
+\begin{equation*}
+    \begin{aligned}
+        &\sum_{i=1}^d \dfrac{\partial}{\partial x_i} \Big \lbrack \dfrac{\partial}{\partial x_j} \Big \lbrack \sum_{k=1}^d G_{ik} (\bold{x}, t) G_{jk}(\bold{x}, t) p_t (\bold{x}) \Big \rbrack \\
+        =& \sum_{i=1}^d \dfrac{\partial}{\partial x_i} \Big \lbrack \dfrac{\partial}{\partial x_j} \Big \lbrack \sum_{k=1}^d G_{ik} (\bold{x}, t) G_{jk}(\bold{x}, t) \Big \rbrack p_t (\bold{x}) + \sum_{j=1}^d \sum_{k=1}^d G_{ik}(\bold{x}, t) G_{jk}(\bold{x}, t) p_t(\bold{x}) \dfrac{\partial}{\partial x_j} \log p_t(\bold{x}) \\
+        =& p_t(\bold{x}) \nabla . \lbrack \bold{G}(\bold{x}, t) \bold{G}(\bold{x}, t)^T \rbrack + p_t(\bold{x}) \bold{G}(\bold{x}, t) \bold{G}(\bold{x}, t)^T \nabla_{\bold{x}} \log p_t (\bold{x})
+    \end{aligned}
+\end{equation*}
+
+dựa vào công thức trên ta tiếp tục viết lại công thức \ref{eq:36} thu được:
+
+\begin{equation} \label{eq:37}
+    \begin{aligned}
+        \dfrac{\partial p_t (\bold{x})}{\partial t} &= - \sum_{i=1}^d \lbrack f_i (\bold{x}, t) p_t(\bold{x}) \rbrack + \dfrac{1}{2} \sum_{i=1}^d \sum_{j=1}^d \dfrac{\partial^2}{\partial x_i \partial x_j} \Big \lbrack \sum_{k=1}^d G_{ik} (\bold{x}, t) G_{jk}(\bold{x}, t) p_t (\bold{x}) \Big \rbrack \\
+        &= - \sum_{i=1}^d \lbrack f_i (\bold{x}, t) p_t(\bold{x}) \rbrack + \dfrac{1}{2} \sum_{i=1}^d \dfrac{\partial}{\partial x_i} \Big \lbrack p_t(\bold{x}) \nabla . \lbrack \bold{G}(\bold{x}, t) \bold{G}(\bold{x}, t)^T \rbrack + p_t(\bold{x}) \bold{G}(\bold{x}, t) \bold{G}(\bold{x}, t)^T \nabla_{\bold{x}} \log p_t (\bold{x}) \Big \rbrack \\
+        &= -\sum_{i=1}^d \dfrac{\partial}{\partial x_i} \Big \lbrack f_i(\bold{x}, t) p_t(\bold{x}) - \dfrac{1}{2} \Big \lbrack \nabla . \lbrack \bold{G}(\bold{x}, t) \bold{G}(\bold{x}, t)^T \rbrack + \bold{G}(\bold{x}, t) \bold{G}(\bold{x}, t)^T \nabla_{\bold{x}} \log p_t(\bold{x})  \Big \rbrack p_t(\bold{x}) \Big \rbrack \\
+        &= - \sum_{i=1}^d \dfrac{\partial}{\partial x_i} \lbrack \tilde{f}_i (\bold{x}, t) p_t(\bold{x}) \rbrack
+    \end{aligned}
+\end{equation}
+
+với ta định nghĩa:
+
+\begin{equation*}
+    \tilde{\bold{f}}(\bold{x}, t) := \bold{f}(\bold{x}, t) - \dfrac{1}{2} \nabla . \lbrack \bold{G}(\bold{x}, t) \bold{G}(\bold{x}, t)^T \rbrack - \dfrac{1}{2} \bold{G}(\bold{x}, t) \bold{G}(\bold{x}, t)^T \nabla_{\bold{x}} \log p_t(\bold{x})
+\end{equation*}
+
+Kiểm tra công thức \ref{eq:37}, ta quan sát thấy rằng công thức này tương đương với phương trình Kolmogorov thuận của phương trình SDE với $\tilde{\bold{G}} (\bold{x}, t) := \bold{0}$(Phương trình Kolmogorov thuận tỏng trường hợp này còn được gọi là phương trình Liouville)
+
+\begin{equation*}
+    d \bold{x} = \tilde{\bold{f}} (\bold{x}, t) dt + \tilde{\bold{G}}(\bold{x}, t) d \bold{w}
+\end{equation*}
+
+về cơ bản là một phương trình ODE:
+
+\begin{equation*}
+    d \bold{x} = \tilde{\bold{f}}(\bold{x}, t) dt
+\end{equation*}
+
+có cùng dòng xác suất ODE được cho bởi công thức \ref{eq:17}.
+Vì vậy, ta đã chỉ ra rằng dòng xác suất ODE ở công thức \ref{eq:17} dẫn đến cùng hàm mật độ xác suất cận biên $p_t(\bold{x})$ với phương trình SDE ở công thức \ref{eq:15}.
+
+\subsection{Tính toán độ hợp lý}
+
+Dòng xác suất của phương trình ODE trong công thức \ref{eq:17} có dạng sau khi ta thế điểm số $\nabla_{\bold{x}} \log p_t (\bold{x})$ với mô hình dựa trên điểm số phụ thuộc vào thời gian $\bold{s}_{\bold{\theta}}(\bold{x}, t)$:
+
+\begin{equation} \label{eq:38}
+    d \bold{x} = \underbrace{\Bigg \lbrace \bold{f}(\bold{x}, t) - \dfrac{1}{2} \nabla . \lbrace \bold{G}(\bold{x}, t) \bold{G}(\bold{x}, t)^T - \dfrac{1}{2} \bold{G}(\bold{x}, t) \bold{G}(\bold{x}, t)^T \bold{s}_{\bold{\theta}} (\bold{x}, t) \rbrace \Bigg \rbrace}_{=: \tilde{\bold{f}}(\bold{x}, t)} dt
+\end{equation}
+
+Với công thức thay đổi tức thời của các biến \citep{chen2018neural}, ta có thể tính log của độ hợp lý $p_0 (\bold{x})$ sử dụng:
+
+\begin{equation} \label{eq:39}
+    \log p_0 (\bold{x}(0)) = \log p_T (\bold{x}(T)) + \int_{0}^{T} \nabla . \tilde{\bold{f}}(\bold{x}(t), t) dt
+\end{equation}
+
+với biến ngẫu nhiên $\bold{x}(t)$ là một hàm của $t$ có thể thu được bằng cách giải dòng xác suất phương trình ODE ở công thức \ref{eq:38}.
+Trong nhiều trường hợp việc tính $\nabla . \tilde{\bold{f}}_{\bold{\theta}}(\bold{x}, t)$ có chi phí tính toán khá đắt, ta theo phương pháp của \citep{grathwohl2018ffjord} để ước lượng đại lượng này với bộ ước lượng truy vết Skilling - Hutchinson \citep{skilling1989eigenvalues,hutchinson1989stochastic}.
+Cụ thể, ta có:
+
+\begin{equation} \label{eq:40}
+    \nabla . \tilde{\bold{f}}_{\bold{\theta}}(\bold{x}, t) = \mathbb{E}_{p(\boldsymbol{\epsilon})} \lbrack \boldsymbol{\epsilon}^T \nabla \tilde{\bold{f}}_{\bold{\theta}} (\bold{x}, t) \boldsymbol{\epsilon} \rbrack
+\end{equation}
+
+với $\nabla \tilde{\bold{f}}_{\bold{\theta}}$ ký hiệu là ma trận Jacobi của $\tilde{\bold{f}}(., t)$ và biến ngẫu nhiên $\boldsymbol{\epsilon}$ thỏa mãn $\mathbb{E}_{p(\boldsymbol{\epsilon})} \lbrack \boldsymbol{\epsilon} \rbrack = \bold{0}$ và $\Cov_{p(\boldsymbol{\epsilon})} \lbrack \boldsymbol{\epsilon} \rbrack = \bold{I}$.
+Tích của vector và ma trận Jacobi $\boldsymbol{\epsilon}^T \nabla \tilde{\bold{f}}_{\bold{\theta}}(\bold{x}, t)$ có thể được tính một cách hiệu quả sử dụng đạo hàm tự động chế độ ngược, xấp xỉ với chi phí tính $\tilde{\bold{f}}(\bold{x}, t)$.
+Kết quả là ta có thể lấy mẫu $\boldsymbol{\epsilon} \sim p(\boldsymbol{\epsilon})$ và sau đó tính ước lượng không chệch hiệu quả của $\nabla . \tilde{\bold{f}}_{\bold{\theta}}(\bold{x}, t)$ sử dụng $\boldsymbol{\epsilon}^T \nabla \tilde{\bold{f}}_{\bold{\theta}} (\bold{x}, t) \boldsymbol{\epsilon}$.
+Khi ước lượng này không chệch, ta có thể đạt đến một sai số nhỏ bất kỳ bằng cách lấy trung bình trên một số đủ lớn lần chạy.
+Vì vậy, bằng cách áp dụng bộ ước lượng Skilling - Hutchinson ở công thức \ref{eq:40} cho công thức \ref{eq:39}, ta có thể tính log của độ hợp lý với độ chính xác bất kỳ.
+
+Trong thử nghiệm của ta, ta sử dụng bộ giải RK45 ODE \citep{dormand1980family} được cung cấp bởi hàm scipy.integrate.solve\_ivp trong mọi trường hợp.
+Giá trị bits/dim trong bảng \ref{tab:2} được tính với atol=1e-5 và rtol=1e-5 cũng như \citep{grathwohl2018ffjord}.
+Để thu được kết quả độ hợp lý của mô hình trong bảng \ref{tab:2}, ta lấy trung bình bits/dim thu được trên tập test trên năm lần chạy khác nhau với $\epsilon=10^{-5}$ (định nghĩa $\epsilon$ ở phụ lục ).
+
+\subsection{Lấy mẫu dòng xác suất}
+
+Giả sử ta có phương trình SDE thuận:
+
+\begin{equation*}
+    d \bold{x} = \bold{f}(\bold{x}, t) d t + \bold{G}(t) d \bold{w}
+\end{equation*}
+
+và phiên bản rời rạc hóa của phương trình này:
+
+\begin{equation} \label{eq:41}
+    \bold{x}_{i+1} = \bold{x}_i + \bold{f}_i(\bold{x}_i) + \bold{G}_i \bold{z}_i, i = 0, 1, \dots, N - 1
+\end{equation}
+
+với $\bold{z}_i \sim \mathcal{N}(\bold{0}, \bold{I})$.
+Ta giả định lịch trình rời rạc hóa của thời gian được cố định từ trước,
+và ta bỏ qua sự phụ thuộc vào $\Delta t$ vào ký hiệu của $\bold{f}_i$ và $\bold{G}_i$.
+Sử dụng công thức \ref{eq:17}, ta thu được dòng xác suất phương trình ODE:
+
+\begin{equation} \label{eq:42}
+    d \bold{x} = \Bigg \lbrack \bold{f}(\bold{x}, t) - \dfrac{1}{2} \bold{G}(t) \bold{G}(t)^T \nabla_{\bold{x} \log p_t (\bold{x})} \Bigg \rbrack dt
+\end{equation}
+
+Ta có thể sử dụng một phương pháp số bất kỳ để tích hợp dòng xác suất phương trình ODE ngược theo thời gian cho việc sinh mẫu dữ liệu.
+Cụ thể, ta đề xuất một phiên bản rời rạc hóa có dạng chức năng tương tự với phương trình \ref{eq:41}:
+
+\begin{equation*}
+    \bold{x}_i = \bold{x}_{i+1} - \bold{f}_{i+1}(\bold{x}_{i+1}) + \dfrac{1}{2} \bold{G}_{i+1} \bold{G}_{i+1}^T \bold{s}_{\bold{\theta}^{\ast}} (\bold{x}_{i+1}, i+1), i = 0, 1, \dots, N - 1
+\end{equation*}
+
+với mô hình dựa trên điểm số $\bold{s}_{\bold{\theta}^{\ast}}(\bold{x}_i, i)$ có điều kiện dựa trên bước lặp thứ $i$.
+Đây là một quy tắc lặp tất định.
+Không như các bộ lấy mẫu khuếch tán ngược hoặc ancestral sampling, không có bất kỳ tính ngẫu nhiên nào một khi mẫu ban đầu $\bold{x}_N$ thu được từ phân phối tiên nghiệm.
+Khi áp dụng vào mô hình SMLD, ta có thể thu được luật lặp sau cho lấy mẫu dòng xác suất:
+
+\begin{equation} \label{eq:43}
+    \bold{x}_i = \bold{x}_{i+1} + \dfrac{1}{2} (\sigma_{i+1}^2 - \sigma_i^2) \bold{s}_{\bold{\theta}^{\ast}} (\bold{x}_{i+1}, \sigma_{i+1}), i = 0, 1, \dots, N - 1
+\end{equation}
+
+Tương tự, với mô hình DDPM, ta có:
+
+\begin{equation} \label{eq:44}
+    \bold{x}_i = (2 - \sqrt{1 - \beta_{i+1}}) \bold{x}_{i+1} + \dfrac{1}{2} \beta_{i+1} \bold{s}_{\bold{\theta}^{\ast}} (\bold{x}_{i+1}, i + 1), i = 0, 1, \dots, N - 1
+\end{equation}
 \end{document}
