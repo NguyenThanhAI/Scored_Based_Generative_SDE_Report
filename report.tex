@@ -544,7 +544,119 @@ Theo \citep{anderson1982reverse}, phương trình SDE đảo ngược thời gia
     d \bold{x} = \lbrace \bold{f}(\bold{x}, t) - \nabla . \lbrack \bold{G}(\bold{x}, t) \bold{G}(\bold{x}, t)^T \rbrack - \bold{G}(\bold{x}, t) \bold{G}(\bold{x}, t)^T \nabla_{\bold{x}} \log p_t(\bold{x}) \rbrace dt + \bold{G}(\bold{x}, t) d\bar{\bold{w}}
 \end{equation}
 
-với ta định nghĩa $\nabla . \bold{F}(\bold{x})$
+với ta định nghĩa $\nabla . \bold{F}(\bold{x}) := (\nabla. \bold{f}^1 (\bold{x}), \nabla. \bold{f}^2 (\bold{x}), \dots, \nabla. \bold{f}^d (\bold{x}))^T$ cho hàm giá trị ma trận $\bold{F}(\bold{x}) := (\bold{f}^1 (\bold{x}), \bold{f}^2 (\bold{x}), \dots, \bold{f}^d (\bold{x}))^T$ xuyên suốt công trình.
 
+Dòng xác suất phương trình ODE tương ứng với công thức \ref{eq:15} có dạng sau (công thức \ref{eq:13}, chứng minh ở phụ lục ):
+
+\begin{equation} \label{eq:17}
+    d \bold{x} = \Big \lbrace \bold{f}(\bold{x}, t) - \dfrac{1}{2} \nabla . \lbrack \bold{G}(\bold{x}, t) \bold{G}(\bold{x}, t)^T  \rbrack - \bold{G}(\bold{x}, t) \bold{G}(\bold{x}, t)^T \nabla_{x} \log p_t(\bold{x}) \Big \rbrace dt
+\end{equation}
+
+Cuối cùng, cho sinh mẫu có điều kiện với phương trình SDE tổng quát \ref{eq:15}, ta có thể giải phương trình SDE đảo ngược thời gian có điều kiện dưới đây (công thức \ref{eq:14}, chi tiết ở phục lục ):\
+
+\begin{equation} \label{eq:18}
+    \begin{aligned}
+        d \bold{x} = \Big \lbrace \bold{f}(\bold{x}, t) - \dfrac{1}{2} \nabla . \lbrack \bold{G}(\bold{x}, t) \bold{G}(\bold{x}, t)^T  \rbrack &- \bold{G}(\bold{x}, t) \bold{G}(\bold{x}, t)^T \nabla_{x} \log p_t(\bold{x}) \\
+        & -\bold{G}(\bold{x}, t) \bold{G}(\bold{x}, t)^T \nabla_{x} \log p_t(\bold{y} \vert \bold{x})  \Big \rbrace dt + \bold{G}(\bold{x}, t) d \bar{\bold{w}}
+    \end{aligned}
+\end{equation}
+
+Khi độ trôi và tham số phân tán của một phương trình SDE là không affine, có thể rất khó để tính nhân chuyển tiếp $p_{0t}(\bold{x}(t) \vert \bold{x}(0))$ ở dạng đóng.
+Điều này gây trở ngại quá trình huấn luyện của các mô hình dựa trên điểm số, vì công thức \ref{eq:7} cần biết $\nabla_{\bold{x}(t)} \log p_{0t} (\bold{x}(t) \vert \bold{x}(0))$.
+Để vượt qua khó khăn này, ta cần thay thế hàm khớp điểm số khử nhiễu trong công thức \ref{eq:7} với các biến thể hiệu quả khác của hàm khớp điểm số không cần tính $\nabla_{\bold{x}(t)} \log p_{0t} (\bold{x}(t) \vert \bold{x}(0))$.
+Ví dụ, khi sử dụng hàm khớp điểm số theo lát \citep{song2020sliced}, hàm mục tiêu huấn luyến luyện của ta trong công thức \ref{eq:7} trở thành:
+
+
+\begin{equation} \label{eq:19}
+    \bold{\theta}^{\ast} = \argmin_{\bold{\theta}} \mathbb{E}_t \Bigg \lbrace \lambda (t) \mathbb{E}_{\bold{x}(0)} \mathbb{E}_{\bold{x}(t)} \mathbb{E}_{\bold{v} \sim p_{\bold{v}}} \Bigg \lbrack \dfrac{1}{2} \lVert \bold{s}_{\bold{\theta}} (\bold{x}(t), t) \rVert_2^2 + \bold{v}^T \bold{s}_{\bold{\theta}} (\bold{x}(t), t) \bold{v} \Bigg \rbrack \Bigg \rbrace
+\end{equation}
+
+với $\lambda: \lbrack 0, T \rbrack \rightarrow \mathbb{R}^{+}$ là một hàm trọng số dương, $t \sim \mathcal{U}(0, T), \mathbb{E} \lbrack \bold{v} \rbrack = \bold{0}$
+Ta có thể luôn luôn mô phỏng SDE để lấy mẫu từ $p_{0t}(\bold{x}(t) \vert \bold{x}(0))$, và giải phương trình ở công thức \ref{eq:19} để huấn luyện mô hình dựa trên điểm số phụ thuộc vào thời gian $\bold{x}_{\bold{theta}}(\bold{x}, t)$.
+
+\section{VE, VP và sub-VP SDEs}
+
+Tiếp theo ta cung cấp các dẫn xuất công thức để chỉ ra dùng nhiễu xáo trộn của các mô hình SMLD và DDPM là phiên bản rời rạc hóa của Variance Exploding (VE) và Variance Preserving (VP) SDE tương ứng.
+Ta cũng giới thiệu thêm sub-VP SDEs, một phiên bản sửa đổi của VP SDEs thường thu được kết quả tốt hơn ở cả chất lượng mẫu và độ hợp lý.
+
+Đầu tiên, ta sử dụng tổng cộng N ngưỡng nhiễu, từng nhân xáo trộn $p_{\sigma_i} (\bold{x} \vert \bold{x}_0)$ của mô hình SMLD có thể thu được từ xích Markov:
+
+\begin{equation} \label{eq:20}
+    \bold{x}_i = \bold{x}_{i-1} + \sqrt{\sigma_i^2 - \sigma_{i-1}^2} \bold{z}_{i-1}, i = 1, \dots, N
+\end{equation}
+
+với $\bold{z}_{i-1} \sim \mathcal{N}(\bold{0}, \bold{I}), \bold{x}_0 \sim p_{\mathrm{data}}$ và ta đặt $\sigma_0 = 0$ để đơn giản hóa ký hiệu.
+Trong giới hạn $N \rightarrow \infty$, xích Markov $\lbrace \bold{x}_i \rbrace_{i=1}^N$ trở thành một quá trình ngẫu nhiên liên tục $\lbrace \bold{x}(t) \rbrace_{t=0}^1$,
+$\lbrace \sigma_i \rbrace_{i=1}^N$ trở thành một hàm $\sigma(t)$ và $\bold{z}_i$ trở thành $\bold{z}(t)$, ta sử dụng biến thời gian liên tục $t \in \lbrack 0, 1 \rbrack$ dành cho chỉ số thay vì số nguyên $i \in \lbrace 1, 2, \dots, N \rbrace$.
+Đặt $\bold{x} \big ( \dfrac{i}{N} \big)=\bold{x}_i, \sigma \big( \dfrac{i}{N} \big) = \sigma_i$,
+và $\bold{z} \big ( \dfrac{i}{N} \big)=\bold{z}_i$ với $i = 1, 2, \dots, N$.
+Ta có thể viết lại công thức \ref{eq:20} với $\Delta t = \dfrac{1}{N}$ và $t \in \lbrace 0, \dfrac{1}{N}, \dots, \dfrac{N-1}{N} \rbrace$:
+
+\begin{equation*}
+    \bold{x}(t + \Delta t) = \bold{x}(t) + \sqrt{\sigma^2 (t + \Delta t) - \sigma^2 (t)} \bold{z}(t) \approx \bold{x} (t) + \sqrt{\dfrac{d \lbrack \sigma^2 (t) \rbrack}{dt}\Delta t} \bold{z}(t)
+\end{equation*}
+
+với đẳng thức xấp xỉ đúng với $\Delta t \ll 1$.
+Trong giới hạn $\Delta t \rightarrow 0$, đẳng thức này tiến đến:
+
+\begin{equation} \label{eq:21}
+    d \bold{x} = \sqrt{\dfrac{d \lbrack \sigma^2(t) \rbrack}{dt}} d \bold{w}
+\end{equation}
+
+là phương trình VE SDE
+
+Cho nhân xáo trộn $\lbrace p_{\alpha_i} (\bold{x} \vert \bold{x}_0) \rbrace_{i=1}^N$ được sử dụng trong DDPM, xích Markov rời rạc là:
+
+\begin{equation} \label{eq:22}
+    \bold{x}_i = \sqrt{1 - \beta_i} \bold{x}_{i-1} + \sqrt{\beta_i} \bold{z}_{i-1}, i = 1, \dots, N
+\end{equation}
+
+với $\bold{z}_{i-1} \sim \mathcal{N}(\bold{0}, \bold{I})$.
+Để thu được giới hạn của xích Markov này khi $N \rightarrow \infty$, ta định nghĩa một tập phụ trợ các mức nhiễu $\lbrace \bar{\beta}_i = N \beta_i \rbrace_{i=1}^N$ và viết lại phương trình \ref{eq:22} như dưới đây:
+
+\begin{equation} \label{eq:23}
+    \bold{x}_i = \sqrt{1 - \dfrac{\bar{\beta}_i}{N}} \bold{x}_{i-1} + \sqrt{\dfrac{\bar{\beta}_i}{N}} \bold{z}_{i-1}, i = 1, \dots, N
+\end{equation}
+
+Trong giới hạn $N \rightarrow \infty, \lbrace \bar{\beta}_i \rbrace_{i=1}^N$ trở thành hàm $\beta(t)$ được đánh chỉ số bởi $t \in \lbrack 0, 1 \rbrack$.
+Đặt $\beta \big ( \dfrac{i}{N} \big) = \bar{\beta}_i$,
+$\bold{x}\big( \dfrac{i}{N} \big) = \bold{x}_i, \bold{z}\big( \dfrac{i}{N} \big) = \bold{z}_i$.
+Ta có thể viết xích Markov ở công thức \ref{eq:23} thành như sau với $\Delta t = \dfrac{1}{N}$ và $t \in \lbrace 0, 1, \dots, \dfrac{N-1}{N} \rbrace$:
+
+\begin{equation} \label{eq:24}
+    \begin{aligned}
+        \bold{x}(t + \Delta t) &= \sqrt{1 - \beta(t + \Delta t) \Delta t} \bold{x}(t) + \sqrt{\beta(t + \Delta t) \Delta t} \bold{z}(t) \\
+        &\approx \bold{x}(t) - \dfrac{1}{2}\beta(t + \Delta t) \Delta t \bold{x} (t) + \sqrt{\beta(t + \Delta t) \Delta t} \bold{z} (t) \\
+        &\approx \bold{x}(t) - \dfrac{1}{2} \beta(t) \Delta t \bold{x} (t) + \sqrt{\beta(t) \Delta t} \bold{z} (t)
+    \end{aligned}
+\end{equation}
+
+với đẳng thức xấp xỉ đúng khi $\Delta t \ll 1$.
+Vì vậy, trong giới hạn $\Delta t \rightarrow$, công thức \ref{eq:24} hội tụ về phương trình VP SDE có dạng sau:
+
+\begin{equation} \label{eq:25}
+    d \bold{x} = - \dfrac{1}{2} \beta(t) \bold{x} dt + \sqrt{\beta(t)} d \bold{w}
+\end{equation}
+
+Tới đây, ta đã chỉ ra được là nhiễu làm xáo trộn được sử dụng trong mô hình SMLD và DDPM tương ứng với rời rạc hóa của VE và VP SDEs.
+Với VE SDE luôn luôn thu được một quá trình với phương sai bùng nổ khi $t \rightarrow \infty$.
+Ngược lại, với VP SDE ta luôn thu được một quá trình với phương sai bị chặn.
+Hơn nữa, quá trình có phương sai đơn vị và là hằng số với mọi $t \in \brack 0;\infty $ khi $p(\bold{x}(0))$ có phương sai đơn vị.
+Khi VP SDE có độ trôi và các hệ số khuếch tán là affine, ta có thể sử dụng công thức 5.51 trong \citep{sarkka2019applied} để thu được phương trình ODE chi phối sự phá triển của phương sai:
+
+\begin{equation*}
+    \dfrac{d \Sigma_{VP}(t)}{dt} = \beta(t) (\bold{I} - \Sigma_{VP}(t))
+\end{equation*}
+
+với $\Sigma_{VP}(t) := \Cov \lbrack \bold{x}(t) \rbrack$ với $\lbrace \bold{x}(t) \rbrace_{t=0}^1$ thỏa mãn một phương trình VP SDE.
+Giải phương trình ODE này, ta thu được:
+
+\begin{equation}\label{eq:26}
+    \Sigma_{VP}(t) = \bold{I} + e^{\int_{0}^t - \beta(s)ds} (\Sigma_{VP}(t) - \bold{I})
+\end{equation}
+
+Ta nhận thấy rất rõ ràng rằng $\Sigma_{VP}(t)$ luôn luôn bị chặn khi cho trước $\Sigma_{VP}(0)$.
+Hơn nữa, $\Sigma_{VP}(t) \equiv \bold{I}$ nếu $\Sigma_{VP}(0) = \bold{I}$.
+Bởi vì sự khác biệt này, ta đặt tên công thức \ref{eq:9} là Variance Exploding (VE) SDE và công thức \ref{eq:11} là Variance Preserving (VP) SDE/
 
 \end{document}
