@@ -864,7 +864,7 @@ Trong thử nghiệm của ta, ta sử dụng bộ giải RK45 ODE \citep{dorman
 Giá trị bits/dim trong bảng \ref{tab:2} được tính với atol=1e-5 và rtol=1e-5 cũng như \citep{grathwohl2018ffjord}.
 Để thu được kết quả độ hợp lý của mô hình trong bảng \ref{tab:2}, ta lấy trung bình bits/dim thu được trên tập test trên năm lần chạy khác nhau với $\epsilon=10^{-5}$ (định nghĩa $\epsilon$ ở phụ lục ).
 
-\subsection{Lấy mẫu dòng xác suất}
+\subsection{Lấy mẫu dòng xác suất} \label{D.3}
 
 Giả sử ta có phương trình SDE thuận:
 
@@ -908,4 +908,245 @@ Tương tự, với mô hình DDPM, ta có:
 \begin{equation} \label{eq:44}
     \bold{x}_i = (2 - \sqrt{1 - \beta_{i+1}}) \bold{x}_{i+1} + \dfrac{1}{2} \beta_{i+1} \bold{s}_{\bold{\theta}^{\ast}} (\bold{x}_{i+1}, i + 1), i = 0, 1, \dots, N - 1
 \end{equation}
+
+\subsection{Lấy mẫu với bộ giải hộp đen phương trình ODE} \label{D.4}
+
+Để tạo ra hình \ref{fig:3}, ta sử dụng một mô hình DDPM được huấn luyện trên tập CelebA-HQ 256$\times$256 với cùng cấu hình trong \citep{ho2020denoising}.
+Tất cả các điểm FID của mô hình của ta trong bảng \ref{tab:2} được tính trên các mẫu từ bộ giải RK45 PDE được thực thi trong scipy.integrate.solve\_ivp với atol=1e-5 và rtol=1e-5.
+Ta sử dụng $\epsilon=10^{-5}$ cho VE SDEs và $\epsilon=10^{-3}$ cho VP SDEs (phụ lục ).
+
+Ngoài các kết quả nôi suy trong hình \ref{fig:3}, ta trình bày thêm các mẫu về can thiệp trong không gian ẩn ở hình \ref{fig:6} bao gồm nội suy và chia tỷ lệ nhiệt độ.
+Mô hình được thử nghiệm là mô hình DDPM được huấn luyện với cùng cấu hình trong \citep{ho2020denoising}.
+
+Mặc dù các bộ giải cho dòng xác suất phương trình ODE cho phép lấy mẫu nhanh, nhưng các mẫu thường có FID cao hơn (không tốt) hơn so với các bộ giải của phương trình SDE nếu không có bộ hiệu chỉnh được sử dụng.
+Ta có các quan sát thực nghiệm cho cả hai chiến lược rời rạc hóa ở phụ lục \ref{D.3} và bộ giải ODE hộp đen được giới thiệu ở trên.
+Hơn nữa, hiệu năng của bộ giải dòng xác suất phương trình ODE phụ thuộc vào lựa chọn của phương trình SDE - chất lượng mẫu của VE SDE kém hơn nhiều so với VP SDE đặc biệt là trên dữ liệu nhiều chiều 
+
+
+\subsection{Mã hóa có thể nhận dạng duy nhất} \label{D.5}
+
+Để kiểm tra tính đúng đắn, ta huấn luyện hai mô hình (ký hiệu là "mô hình A" và "mô hình B") với các kiến trúc khác nhau sử dụng VE SDE trên tập CIFAR-10.
+Mô hình A là một mô hình NCSN++ với 4 lớp neuron trên từng độ phân giải được huấn luyện sử dụng hàm mục tiêu liên tục ở trong công thức \ref{eq:7} và mô hình B cũng giống hệt ngoại trừ sử dụng 8 lớp neuron trên từng độ phân giải.
+Các cấu hình về mô hình ở phụ lục .
+
+Ta báo cáo mã hóa ẩn thu được từ mô hình A và mô hình B cho các ảnh ngẫu nhiên trên tập CIFAR-10 trong hình \ref{fig:7}.
+Trong hình \ref{fig:8}, ta chỉ ra rằng sự khác biệt giữa từng chiều và hệ số tương quan giữa các mã hóa ẩn trên 16 ảnh của tập CIFAR-10.
+Các kết quả cho thấy với cùng đầu vào, mô hình A và mô hình B cung cấp các mã hóa rất giống nhau ở trên các chiều, mặc dù khác kiến trúc mô hình và cấu hình huấn luyện.
+
+\section{Lấy mẫu khuếch tán ngược} \label{E}
+
+Cho phương trình SDE thuận:
+
+\begin{equation*}
+    d \bold{x} = \bold{f}(\bold{x}, t) dt + \bold{G}(t) d \bold{w}
+\end{equation*}
+
+và giả định luật lặp sau là phiên bản rời rạc của phương trình vi phân trên:
+
+\begin{equation} \label{eq:45}
+    \bold{x}_{i+1} = \bold{x}_i + \bold{f}_i (\bold{x}_i) + \bold{G}_i \bold{z}_i, i = 0, 1, \dots, N - 1
+\end{equation}
+
+với $\bold{z}_i \sim \mathcal{N}(\bold{0}, \bold{I})$.
+Ta giả định lịch trình rời rạc hóa của thời gian được cố định từ trước và ta có thể bỏ qua trong ký hiệu của $\bold{f}_i$ và $\bold{G}_i$.
+
+Dựa trên công thức \ref{eq:45}, ta đề xuất rời rạc hóa phương trình SDE đảo ngược thời gian:
+
+\begin{equation*}
+    d \bold{x} = \lbrack \bold{f}(\bold{x}, t) - \bold{G}(t) \bold{G}(t)^T \nabla_{\bold{x}} \log p_t (\bold{x}) \rbrack dt + \bold{G}(t) d \bar{\bold{w}}
+\end{equation*}
+
+Với dạng tương tự, luật lặp cho $i \in \lbrace 0, 1, \dots, N -1 \rbrace$:
+
+\begin{equation} \label{eq:46}
+    \bold{x}_i = \bold{x}_{i+1} - \bold{f}_{i+1} (\bold{x}_{i+1}) + \bold{G}_{i+1} \bold{G}_{i+1}^T \bold{s}_{\boldsymbol{\theta}^{\ast}} (\bold{x}_{i+1}, i + 1) + \bold{G}_{i+1} \bold{z}_{i+1}
+\end{equation}
+
+với mô hình dựa trên điểm số đã được huấn luyện $\bold{x}_{\boldsymbol{\theta}^{\ast}}(\bold{x}_i, i)$ được lấy điều kiện trên bước lặp thứ $i$.
+
+Khi áp dụng công thức \ref{eq:46} vào công thức \ref{eq:10} và công thức \ref{eq:20}, ta thu được một tập mới các bộ giải số cho phương trình VE và VP SDEs đảo ngược thời gian, kết quả tạo ra thuật toán lấy mẫu của phần "bộ dự đoán" ở trong thuật toán và thuật toán .
+Ta đặt tên các phương pháp lấy mẫu này là (dựa trên chiến lược rời rạc hóa ở công thức \ref{eq:46}) bộ lấy mẫu khuếch tán ngược.
+
+Như kỳ vọng, ancestral sampling của mô hình DDPM \citep{ho2020denoising} ở công thức \ref{eq:4} khớp với bộ khuếch tán ngược khi $\beta_i \rightarrow 0$ với mọi $i$ (điều này xảy ra khi $\Delta t \rightarrow 0$ khi $\beta_i = \bar{\beta}_i$ được trình bày ở phụ lục ), bởi vì:
+
+\begin{equation*}
+    \begin{aligned}
+        \bold{x}_i &= \dfrac{1}{\sqrt{1 - \beta_{i+1}}}(\bold{x}_{i+1} + \beta_{i+1} \bold{s}_{\boldsymbol{\theta}^{\ast}}(\bold{x}_{i+1}, i+1)) + \sqrt{\beta_{i+1}} \bold{z}_{i+1} \\
+        &= \Big( 1 + \dfrac{1}{2} \beta_{i+1} + o(\beta_{i+1}) \Big)(\bold{x}_{i+1} + \beta_{i+1} \bold{s}_{\boldsymbol{\theta}^{\ast}}(\bold{x}_{i+1}, i+1)) + \sqrt{\beta_{i+1}} \bold{z}_{i+1} \\
+        &\approx \Big( 1 + \dfrac{1}{2}\beta_{i+1} \Big)(\bold{x}_{i+1} + \beta_{i+1} \bold{s}_{\boldsymbol{\theta}^{\ast}}(\bold{x}_{i+1}, i+1)) + \sqrt{\beta_{i+1}} \bold{z}_{i+1} \\
+        &= \Big( 1 + \dfrac{1}{2}\beta_{i+1} \Big) \bold{x}_{i+1} + \beta_{i+1} \bold{s}_{\boldsymbol{\theta}^{\ast}} (\bold{x}_{i+1}, i + 1) + \dfrac{1}{2} \beta_{i+1}^2 \bold{s}_{\boldsymbol{\theta}^{\ast}} (\bold{x}_{i+1}, i+1) + \sqrt{\beta_{i+1}} \bold{z}_{i+1} \\
+        &\approx \Big( 1 + \dfrac{1}{2}\beta_{i+1} \Big) \bold{x}_{i+1} + \beta_{i+1} \bold{s}_{\boldsymbol{\theta}^{\ast}} (\bold{x}_{i+1}, i + 1) + \sqrt{\beta_{i+1}} \bold{z}_{i+1} \\
+        &= \Big \lbrack 2 - \Big ( 1 - \dfrac{1}{2} \beta_{i+1} \Big) \Big \rbrack \bold{x}_{i+1} + \beta_{i+1} \bold{s}_{\boldsymbol{\theta}^{\ast}}(\bold{x}_{i+1}, i+1) + \sqrt{\beta_{i+1}} \bold{z}_{i+1} \\
+        &\approx \Big \lbrack 2 - \Big ( 1 - \dfrac{1}{2} \beta_{i+1} \Big) + o(\beta_{i+1}) \Big \rbrack \bold{x}_{i+1} + \beta_{i+1} \bold{s}_{\boldsymbol{\theta}^{\ast}}(\bold{x}_{i+1}, i+1) + \sqrt{\beta_{i+1}} \bold{z}_{i+1} \\
+        &= (2 - \sqrt{1 - \beta_{i+1}}) \bold{x}_{i+1} + \beta_{i+1} \bold{s}_{\boldsymbol{\theta}^{\ast}}(\bold{x}_{i+1}, i+1) + \sqrt{\beta_{i+1}} \bold{z}_{i+1} \\
+    \end{aligned}
+\end{equation*}
+
+Vì vậy, bộ lấy mẫu ancestral sampling ban đầu của công thức \ref{eq:4} về cơ bản là một phiên bản rời rạc hóa khác của cùng một phương trình SDE đảo ngược thời gian.
+Điều này nhất quán với phương pháp lấy mẫu trong \citep{ho2020denoising} là một bộ giải số cho phương trình VP SDE đảo ngược thời gian trong khung làm việc liên tục của ta.
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[height=0.7\textheight]{figures/6.png}
+    \caption{Các mẫu từ dòng xác suất phương trình ODE cho VP SDE trên tập CelebA-HQ 256$\times$256.
+    Các hàng trên: Nội suy cầu giữa các mẫu ngẫu nhiên.
+    Các hàng dưới: thay đổi tham số nhiệt độ (giảm chuẩn trong embedding)}
+    \label{fig:6}
+\end{figure}
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=0.8\linewidth]{figures/7.png}
+    \caption{So sánh 100 chiều đầu tiên của mã hóa ẩn thu được từ một ảnh ngẫu nhiên trên tập CIFAR-10.
+    "Mô hình A" và "mô hình B" được huấn luyện trên các kiến trúc khác nhau}
+    \label{fig:7}
+\end{figure}
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=0.8\linewidth]{figures/8.png}
+    \caption{\textit{Trái:} Sự khác biệt về từng chiều giữa mã hóa thu được từ mô hình A và mô hình B.
+    Ta cũng so sánh sự khác nhau giữa biểu diễn bị xáo trộn của hai mô hình.
+    \textit{Phải:} Hệ số tương quan từng chiều của mã hóa thu được từ mô hình A và mô hình B.}
+    \label{fig:8}
+\end{figure}
+
+\section{Ancestral Sampling cho mô hình SMLD}
+
+Phương pháp ancestral sampling cho mô hình DDPM có thể được áp dụng cho mô hình SMLD.
+Ta sét một dãy các ngưỡng nhiễu $\sigma_1 < \sigma_2 < \dots < \sigma_N$ trong SMLD.
+Bằng cách gây xáo trộn điểm dữ liệu $\bold{x}_0$ với các ngưỡng nhiễu này một cách tuần tự, ta thu được một xích Markov $\bold{x}_0 \rightarrow \bold{x}_1 \rightarrow \dots \rightarrow \bold{x}_N$ với:
+
+\begin{equation*}
+    p(\bold{x}_i \vert \bold{x}_{i-1}) = \mathcal{N}(\bold{x}_i; \bold{x}_{i-1}, (\sigma_i^2 - \sigma_{i-1}^2) \bold{I}), i = 1, 2, \dots, N
+\end{equation*}
+
+Ta giả sử $\sigma_0 = 0$ để đơn giản hóa ký hiệu.
+Theo \citep{ho2020denoising}, ta có thể tính:
+
+\begin{equation*}
+    q(\bold{x}_{i-1} \vert \bold{x}_i, \bold{x}_0) = \mathcal{N} \Bigg( \bold{x}_{i-1}; \dfrac{\sigma_{i-1}^2}{\sigma_i^2} \bold{x}_i + \Big( 1 - \dfrac{\sigma_{i-1}^2}{\sigma_i^2} \Big) \bold{x}_0, \dfrac{\sigma_{i-1}^2 (\sigma_i^2 - \sigma_{i-1}^2)}{\sigma_i^2} \bold{I} \Bigg)
+\end{equation*}
+
+Nếu ta tham số hóa nhân chuyển tiếp ngược là $p_{\boldsymbol{\theta}}(\bold{x}_{i-1} \vert \bold{x}_i)=\mathcal{N}(\bold{x}_{i-1}; \boldsymbol{\mu}_{\boldsymbol{\theta}}(\bold{x}_i, i), \tau_i^2 \bold{I})$:
+
+\begin{equation*}
+    \begin{aligned}
+        L_{t-1} &= \mathbb{E}_q \lbrack D_{\mathrm{KL}}(q(\bold{x}_{i-1}) \Vert p_{\boldsymbol{\theta}}(\bold{x}_{i-1} \vert \bold{x}_i)) \rbrack \\
+        &= \mathbb{E}_q \Bigg \lbrack \dfrac{1}{2 \tau_i^2} \Bigg \lVert \dfrac{\sigma_{i-1}^2}{\sigma_i^2} \bold{x}_i + \big(1 - \dfrac{\sigma_{i-1}^2}{\sigma_i^2} \bold{x}_0 - \boldsymbol{\mu}_{\boldsymbol{\theta}} (\bold{x}_i, i) \big) \Bigg \rVert_2^2 \Bigg \rbrack + C \\
+        &= \mathbb{E}_{\bold{x}_0, \bold{z}} \Bigg \lbrack \dfrac{1}{2 \tau_i^2} \Bigg \lVert \bold{x}_i(\bold{x}_0, \bold{z}) - \dfrac{\sigma_i^2 - \sigma_{i-1}^2}{\sigma_i} \bold{z} - \boldsymbol{\mu}_{\boldsymbol{\theta}} (\bold{x}_i (\bold{x}_0, \bold{z}), i) \Bigg \rVert_2^2 \Bigg \rbrack + C
+    \end{aligned}
+\end{equation*}
+
+với $L_{t-1}$ là một thành phần biểu diễn của hàm mục tiêu ELBO (công thức 8 trong \citep{ho2020denoising}), C là một hằng số không phụ thuộc vào $\boldsymbol{\theta}, \bold{z} \sim \mathcal{N}(\bold{0}, \bold{I})$ và $bold{x}_i (\bold{x}_0, \bold{z})=\bold{x}_0 + \sigma_i \bold{z}$.
+Vì vậy ta có thể tham số hóa $\boldsymbol{\mu}_{\boldsymbol{\theta}}(\bold{x}_i, i)$ qua công thức:
+
+\begin{equation} \label{eq:47}
+    \bold{x}_{i-1} = \bold{x}_i + (\sigma_i^2 - \sigma_{i-1}^2) \bold{s}_{\boldsymbol{\theta}^{\ast}} (\bold{x}_i, i) + \sqrt{\dfrac{\sigma_{i-1}^2 (\sigma_i^2 - \sigma_{i-1}^2)}{\sigma_i^2}} \bold{z}_i, i = 1, 2, \dots, N
+\end{equation}
+
+với $\bold{x}_N \sim \mathcal{N}(\bold{0}, \sigma_N^2 \bold{I}), \bold{\theta}^{\ast}$ ký hiệu tham số tối ưu của $\bold{s}_{\boldsymbol{\theta}}$ và $\bold{z}_i \sim \mathcal{N}(\bold{0}, \bold{I})$.
+Ta gọi công thức \ref{eq:47} là phương pháp ancestral sampling cho mô hình SMLD.
+
+\subsection{Bộ lấy mẫu dự đoán - hiệu chỉnh} \label{G}
+
+\textbf{Lấy mẫu dự đoán - hiệu chỉnh (PC)} Bộ dự đoán có thể là bất kỳ bộ giải số nào cho phương trình SDE đảo ngược thời gian với chiến lược rời rạc hóa cố định.
+Bộ hiệu chỉnh có thể là bất kỳ phương pháp MCMC nào dựa trên điểm số.
+Trong quá trình lấy mẫu sử dụng PC, ta luân phiên chạy giữa bộ dự đoán và bộ hiệu chỉnh được miêu tả trong thuật toán \ref{alg:1}.
+Ví dụ, khi sử dụng bộ giải phương trình SDE khuếch tán đảo ngược thời gian (phụ lục ) là bộ dự đoán, và tôi luyện động học Langevin \citep{song2019generative} là bộ hiệu chỉnh, ta có thuật toán \ref{alg:2} và thuật toán \ref{alg:3} cho VE và VP SDE tương ứng,
+với $\lbrace \epsilon_i \rbrace_{i=0}^{N-1}$ là độ dài bước cho động học Langevin được trình bày bên Dưới
+
+\begin{algorithm}[h!]
+    \DontPrintSemicolon
+    \KwIn{$N$: số bước rời rạc hóa cho phương trình SDE đảo ngược thời gian, $M$: số bước hiệu chỉnh}
+    Khởi tạo $\bold{x}_N \sim p_T(\bold{x})$\;
+    \For {$i \gets N - 1$ \KwSty{to} 0} {
+        $\bold{x}_i \gets$ Predictor($\bold{x}_{i+1}$)\;
+        \For {$j \gets 1$ \KwSty{to} M} {
+            $\bold{x}_i \gets$ Corrector($\bold{x}_i$)\;
+        }
+    }
+    \Return{$\bold{x}_0$}\;
+    \caption{Bộ lấy mẫu dự đoán - hiệu chỉnh (PC)}
+    \label{alg:1}
+\end{algorithm}
+
+\begin{algorithm}[h!]
+    \DontPrintSemicolon
+    $\bold{x}_N \sim \mathcal{N}(\bold{0}, \sigma_{\max}^2 \bold{I})$\;
+    \For {$i \gets N - 1$ \KwSty{to} 0} {
+        $\bold{x}_i^{\prime} \gets \bold{x}_{i+1} + (\sigma_{i+1}^2 - \sigma_i^2)\bold{s}_{\boldsymbol{\theta}}^{\ast}(\bold{x}_{i+1}, \sigma_{i+1})$\;
+        $\bold{z} \sim \mathcal{N}(\bold{0}, \bold{I})$\;
+        $\bold{x}_i \gets \bold{x}_i^{\prime} + \sqrt{\sigma_{i+1}^2 - \sigma_i^2} \bold{z}$\;
+        \For{$j \gets 1$ \KwSty{to} $M$} {
+            $\bold{z} \gets \mathcal{N}(\bold{0}, \bold{I})$\;
+            $\bold{x}_i \gets \bold{x}_i + \epsilon_i \bold{s}_{\boldsymbol{\theta}^{\ast}}(\bold{x}_i, \sigma_i) + \sqrt{2 \epsilon_i} \bold{z}$\;
+        }
+    }
+    \Return{$\bold{x}_0$}\;
+    \caption{Lấy mẫu PC (VE SDE)}
+    \label{alg:2}
+\end{algorithm}
+
+\begin{algorithm}[h!]
+    \DontPrintSemicolon
+    $\bold{x}_N \sim \mathcal{N}(\bold{0}, \bold{I})$\;
+    \For {$i \gets N - 1$ \KwSty{to} 0} {
+        $\bold{x}_i^{\prime} \gets (2 - \sqrt{1 - \beta_{i+1}}) \bold{x}_{i+1} + \beta_{i+1} \bold{s}_{\boldsymbol{\theta}^{\ast}}(\bold{x}_{i+1}, i+1)$\;
+        $\bold{z} \sim \mathcal{N}(\bold{0}, \bold{I})$\;
+        $\bold{x}_i \gets \bold{x}_i^{\prime} + \sqrt{\beta_{i+1}} \bold{z}$\;
+        \For{$j \gets 1$ \KwSty{to} $M$} {
+            $\bold{z} \gets \mathcal{N}(\bold{0}, \bold{I})$\;
+            $\bold{x}_i \gets \bold{x}_i + \epsilon_i \bold{s}_{\boldsymbol{\theta}^{\ast}}(\bold{x}_i, \sigma_i) + \sqrt{2 \epsilon_i} \bold{z}$\;
+        }
+    }
+    \Return{$\bold{x}_0$}\;
+    \caption{Lấy mẫu PC (VP SDE)}
+    \label{alg:3}
+\end{algorithm}
+
+\textbf{Thuật toán hiệu chỉnh} Ta đặt lịch trình cho tôi luyện động học Langevin trong \citep{song2019generative}, nhưng sắp xếp lại với một vài chỉnh sửa để tăng khả năng giải thích và hiệu năng thực nghiệm.
+Ta cung cấp các thuật toán hiệu chỉnh trong thuật toán \ref{alg:4} và thuật toán \ref{alg:5} tương ứng, ta gọi $r$ là tỷ số "signal to noise".
+Ta xác định các độ dài bước $\epsilon$ sử dụng chuẩn của nhiễu Gauss $\lVert z \rVert_2$, chuẩn của mô hình dựa trên điểm số $\lVert \bold{s}_{\boldsymbol{\theta}^{\ast}} \rVert_2$ và tỷ lệ signal-to-noise $r$.
+Khi lấy mẫu một nhóm lớn các mẫu cùng một lúc, ta thay chuẩn $\lVert . \rVert_2$ với trung bình của chuẩn trong nhóm.
+Khi kích thước nhóm nhỏ, ta thay $\lVert \bold{z} \rVert_2$ với $\sqrt{d}$, với $d$ là số chiều của $\bold{z}$.
+
+
+
+\begin{algorithm}[h!]
+    \DontPrintSemicolon
+    \KwIn{$\lbrace \sigma_i \rbrace_{i=1}^N, r, N, M$}
+    $\bold{x}_N^0 \sim \mathcal{N}(\bold{0}, \sigma_{\max}^2 \bold{I})$\;
+    \For{$i \gets N$ \KwSty{to} 1} {
+        \For{$j \gets 1$ \KwSty{to} $M$} {
+            $\bold{z} \gets  \mathcal{N}(\bold{0}, \bold{I})$\;
+            $\bold{g} \gets \bold{s}_{\boldsymbol{\theta}^{\ast}}(\bold{x}_i^{j-1}, \sigma_i)$\;
+            $\epsilon \gets 2 (r \lVert \bold{z} \rVert_2 / \lVert g \rVert_2)^2$\;
+            $\bold{x}_i^j \gets \bold{x}_i^{j-1} + \epsilon \bold{g} + \sqrt{2 \epsilon} \bold{z}$\;
+        }
+        $\bold{x}_{i-1}^0 \gets \bold{x}_i^M$\;
+    }
+    \Return{$\bold{x}_0^0$}\;
+    \caption{Thuật toán hiệu chỉnh (VE SDE)}
+    \label{alg:4}
+\end{algorithm}
+
+\begin{algorithm}[h!]
+    \DontPrintSemicolon
+    \KwIn{$\lbrace \sigma_i \rbrace_{i=1}^N, r, N, M$}
+    $\bold{x}_N^0 \sim \mathcal{N}(\bold{0}, \bold{I})$\;
+    \For{$i \gets N$ \KwSty{to} 1} {
+        \For{$j \gets 1$ \KwSty{to} $M$} {
+            $\bold{z} \gets  \mathcal{N}(\bold{0}, \bold{I})$\;
+            $\bold{g} \gets \bold{s}_{\boldsymbol{\theta}^{\ast}}(\bold{x}_i^{j-1}, i)$\;
+            $\epsilon \gets 2 \alpha_i (r \lVert \bold{z} \rVert_2 / \lVert g \rVert_2)^2$\;
+            $\bold{x}_i^j \gets \bold{x}_i^{j-1} + \epsilon \bold{g} + \sqrt{2 \epsilon} \bold{z}$\;
+        }
+        $\bold{x}_{i-1}^0 \gets \bold{x}_i^M$\;
+    }
+    \Return{$\bold{x}_0^0$}\;
+    \caption{Thuật toán hiệu chỉnh (VP SDE)}
+    \label{alg:5}
+\end{algorithm}
+
 \end{document}
