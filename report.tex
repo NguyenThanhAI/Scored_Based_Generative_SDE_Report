@@ -1149,4 +1149,248 @@ Khi kích thước nhóm nhỏ, ta thay $\lVert \bold{z} \rVert_2$ với $\sqrt{
     \label{alg:5}
 \end{algorithm}
 
+\textbf{Khử nhiễu} Cho cả hai mô hình SMLD và DDPM, các mẫu dữ liệu được sinh ra thường bao gồm một lượng nhỏ nhiễu rất khó được phát hiện bởi con người.
+Được chú ý bởi \cite{jolicoeur2020adversarial}, FID có thể tệ hơn đáng kể nếu không được loại bỏ nhiễu này.
+Sự nhạy cảm với nhiễu cũng là một lý do vì sao mô hình NCNS được huấn luyện với SMLD hoạt động kém hơn so với mô hình DDPM về chỉ số FID, bởi vì các mô hình trước không sử dụng bước khử nhiễu khi kết thúc lấy mẫu trong khi các mô hình mới có khử nhiễu.
+Trong tất cả các thử nghiệm của công trình này, ta đảm bảo có bước khử nhiễu khi kết thúc quá trình lấy mẫu, sử dụng công thức Tweedie \cite{efron2011tweedie}
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=0.8\linewidth]{figures/9.png}
+    \caption{Lấy mẫu PC cho tập LSUN bedroom và LSUN church.
+    Trục thẳng đứng tương ứng với tổng chi phí tính toán, trục nằm ngang biểu diễn lượng tính toán dành cho bộ hiệu chỉnh.
+    Các mẫu là tốt nhất khi chi phí tính toán chi đều giữa bộ dự đoán và bộ hiệu chỉnh}
+    \label{fig:9}
+\end{figure}
+
+\textbf{Huấn luyện} Ta sử dụng cùng kiến trúc trong \citep{ho2020denoising} cho mô hình dựa trên điểm số của ta.
+Cho VE SDE, ta huấn luyện một moohinhf với hàm mục tiêu SMLD gốc trong công thức \ref{eq:1}, tương tự cho VP SDE,
+ta sử dụng hàm mục tiêu DDPM ban đầu trong công thức \ref{eq:3}.
+Ta áp dụng số ngưỡng nhiễu là 1000 ngưỡng nhiễu cho huấn luyện các mô hình.
+Kết quả ở trong hình \ref{fig:9}, ta huấn luyện mô hình NCSN++ (được trình bày ở phụ lục ) trên tạp LSUN 256 $\times$ 256 bedroom và LSUN 256 $\times$ 256 church \citep{yu2015lsun} với VESDE và hàm mục tiêu liên tục ở công thức \ref{eq:7}.
+Batch size được cố định là 128 trên tập CIFAR-10 và 64 trên tập LSUN.
+
+\textbf{Các phương pháp nội suy ad-hoc cho các ngưỡng nhiễu} Mô hình trong thử nghiệm ngày được huấn luyện với 1000 ngưỡng nhiễu.
+Để thu được kết quả cho P2000 (bộ lấy mẫu chỉ dự đoán sử dụng 2000 bước) yêu cầu 2000 ngưỡng nhiễu,
+ta cần nội suy giữa 1000 ngưỡng nhiễu tại thời điểm chạy suy luận.
+Kiến trúc cụ thể cho mô hình dựa trên điểm số điều kiện vào nhiễu trong \citep{ho2020denoising} sử dụng sinusoidal positional embeddings cho mô hình hóa điều kiện trên số bước là số nguyên.
+Điều này cho phép ta nội suy giữa các ngưỡng nhiễu trong lúc chạy suy luận theo cách ad-hoc (trong khi rất khó để làm như vậy cho các kiến trúc khác như kiến trúc trong \citep{song2019generative}).
+Cụ thheer, cho mô hình SMLD, ta giữ $\sigma_{\min}$ và $\sigma_{\max}$ cố định và tăng gấp đôi số bước thời gian.
+Đối với mô hình DDPM, ta giảm một nửa $\beta_{\min}$ và $\beta_{\max}$ trong khi tăng ấp đôi số bước thời gian.
+Giả sử $\lbrace \bold{s}_{\boldsymbol{\theta}}(\bold{x}, i) \rbrace_{i=0}^{N-1}$ là một mô hình dựa trên điểm số được huấn luyện trên $N$ bước thời gian và đặt $\lbrace \bold{s}_{\boldsymbol{\theta}}(\bold{x}, i)^{\prime} \rbrace_{i=0}^{2N-1}$ ký hiệu là mô hình dựa trên điểm số được nội suy tương ứng tại $2N$ bước thời gian.
+Ta kiểm tra hai chiến lược nội suy cho các bước thời gian, nội suy tuyến tính với $\bold{s}_{\boldsymbol{\theta}}^{\ast} (\bold{x}, i)= \bold{s}_{\boldsymbol{\theta}}(\bold{x}, i/2)$ và nội suy làm tròn với $\bold{s}_{\boldsymbol{\theta}}^{\ast} (\bold{x}, i)= \bold{s}_{\boldsymbol{\theta}}(\bold{x}, \floor*{i/2})$.
+Ta cung cấp các kết quả với nội suy tuyến tính trong bảng \ref{tab:1} và kết quả cho nội suy làm tròn ở bảng \ref{tab:4}.
+Ta quan sát các phương pháp nội suy khác nhau cho kết quả khác nhau nhưng vẫn duy trì xung hướng chung phương pháp dự đoán - hiệu chỉnh cho kết quả tốt hơn chỉ sử dụng bộ dự đoán hoặc bộ hiệu chỉnh.
+
+
+
+\begin{table}[h!]
+    \centering
+    \caption{So sánh các bộ lấy mẫu khác nhau trên tập CIFAR-10, với "P2000" sử dụng nội suy làm tròn giữa các ngưỡng nhiễu.
+    Trung bình và phương sai được tính dựa trên năm lần chạy lấy mẫu}
+    \resizebox{\columnwidth}{!}{
+        \begin{tabular}{c|c|c|c|c|c|c|c|c}
+            \hline
+            & \multicolumn{4}{|c|}{Variance Exploding SDE (SMLD)} & \multicolumn{4}{|c}{Variance Preserving SDE (DDPM)} \\
+            \hline
+            FID $\downarrow$ & P1000 & P2000 & C2000 & PC1000 & P1000 & P2000 & C2000 & PC1000 \\
+            \hline
+            ancestral sampling & 4.98 $\pm$ .06 & 4.92 $\pm$ .02 & \multirow{3}{*}{20.43 $\pm$ .07} & \textbf{3.62} $\pm$ \textbf{.03} & 3.24 $\pm$  .02 & \textbf{3.11} $\pm$ \textbf{.03} & \multirow{3}{*}{19.06 $\pm$ .06} & 3.21 $\pm$ .02 \\
+            reverse diffusion & 4.79 $\pm$ .07 & 4.72 $\pm$ .07 & & \textbf{3.60} $\pm$ \textbf{.02} & 3.21 $\pm$  .02 & \textbf{3.10} $\pm$ \textbf{.03} & & 3.18 $\pm$ .01 \\
+            probability flow & 15.41 $\pm$ .15 & 12.87 $\pm$ .09 & & \textbf{3.51} $\pm$ \textbf{.04} & 3.59 $\pm$  .04 & 3.25 $\pm$ .04 & & \textbf{3.06} $\pm$ \textbf{.03} \\
+            \hline
+        \end{tabular}
+    }
+    \label{tab:4}
+\end{table}
+
+\begin{table}[h!]
+    \centering
+    \caption{Tỷ lệ signal-to-noise tối cho cho các bộ lấy mẫu khác nhau.
+    "P1000" và "P2000": lấy mẫu chỉ sử dụng bộ dự đoán sử dụng 1000 hoặc 2000 bước thời gian.
+    "C2000": lấy mẫu chỉ sử dụng bộ hiệu chỉnh sử dụng 2000 bước.
+    "PC1000": lấy mẫu sử dụng dự đoán - hiệu chỉnh với 1000 bước dự đoán và 1000 bước hiệu chỉnh}
+    \resizebox{\columnwidth}{!}{
+        \begin{tabular}{c|c|c|c|c|c|c|c|c}
+            \hline
+            & \multicolumn{4}{|c|}{VE SDE (SMLD)} & \multicolumn{4}{|c}{VP SDE (DDPM)} \\
+            \hline
+            $r$ & P1000 & P2000 & C2000 & PC1000 & P1000 & P2000 & C2000 & PC1000 \\
+            \hline
+            ancestral sampling & - & - & \multirow{3}{*}{0.22} & 0.17 & - & - & \multirow{3}{*}{0.27} & 0.01 \\
+            reverse diffusion & - & - & & 0.16 & - & - & & 0.01 \\
+            probability flow & - & - & & 0.16 & - & - & & 0.04 \\
+            \hline
+        \end{tabular}
+    }
+    \label{tab:5}
+\end{table}
+
+\textbf{Siêu tham số của các bộ lấy mẫu} Cho bộ lấy mẫu dự đoán - hiệu chỉnh và chỉ hiệu chỉnh trên tập CIFAR-10, ta tìm thấy tỷ lệ signal-to-noise ($r$) tốt nhất trên một ô lưới cách nhau 0.01.
+Ta báo cáo $r$ tốt nhất trong bảng \ref{tab:5}.
+Trên tập LSUN bedroom/church outdoor, ta cố định $r$ thành 0.075.
+Khi không chú ý gì thêm, ta sử dụng một bước hiệu chỉnh trên từng ngưỡng nhiên cho tất cả các bộ lấy mẫu PC.
+Ta sử dụng hai bước hiệu chỉnh trên từng ngưỡng nhiễu cho bộ lấy mẫu chỉ chỉ định trên tập CIFAR-10.
+Để sinh mẫu dữ liệu, batch size là 1024 trên tập CIFAR-10 và 8 trên tập LSUN bedroom/church outdoor.
+
+\label{Các cải thiện về kiến trúc mô hình} \label{H}
+
+Ta khám phá nhiều thiết kế kiến trúc để cải thiện mô hình dựa trên điểm số cho cả VE và VP SDEs.
+Nỗ lực của ta mang đến chất lượng mẫu tốt nhất từ trước đến nay trên tập CIFAR-10, độ hợp lý tốt nhất từ trước đến nay CIFAR-10 giải lượng tử hóa đều và cho phép các mẫu có độ trung thực cao trên độ phân giải 1024 $\times$ 1024 từ mô hình sinh dựa trên điểm số.
+
+\subsection{Cấu hình cho thử nghiệm kiến trúc} \label{H.1}
+
+Khi không nói gì thêm, tất cả các mô hình được huấn luyện trong 1.3 triệu bước, ta lưu lại mô hình cứ mỗi 50000 bước lặp.
+Đối với VE SDEs, ta xét hai tập dữ liệu CIFAR-10 32$\times$32 \citep{krizhevsky2009learning} và CelebA 64 $\times$ 64 \citep{liu2015deep}, tiền xử lý như trong \citep{song2019generative}.
+Ta so sánh nhiều cấu hình khác nhau dựa trên điểm số FID trung bình trên các checkpoint sau 0.5 triệu bước lặp.
+Đối với mô hình VP SDE, ta chỉ xét tập CIFAR-10 để tiết kiệm chi phí tính toán và so sánh các mô hình dựa trên điểm số FID trung bình trên các checkpoint thu được từ 0.25 đến 0.5 triệu bước lặp, bởi vì FID dường như tăng sau 0.5 triệu bước lặp đối với VP SDEs.
+
+Tất cả các điểm số FID được tính trên 50 nghìn mẫu với tensorflow\_gan.
+Đối với lấy mẫu, ta sử dụng bộ lấy mẫu PC rời rạc hóa tại 1000 bước thời gian.
+Ta chọn bộ lấy mẫu khuếch tán ngược (phụ lục ) làm bộ dự đoán.
+Ta sử dụng một bước hiệu chỉnh cập nhật cho bộ dự đoán cho VE SDE với tỷ số signal-to-noise là 0.16,
+nhưng lưu lại bước hiệu chỉnh cho VP SDE cho bộ hiệu chỉnh chỉ giúp cho kết quả tốt hơn không nhiều nhưng yêu cầu tính toán gấp đôi.
+Ta theo \citep{ho2020denoising} cho tối ưu hóa, bao gồm tốc độ học, giới hạn gradient, và lịch trình tốc độ học.
+Trừ khi nói thêm, các mô hình được huấn luyện với hàm của tiêu của SMLD và DDPM gốc được rời rạc ở công thức \ref{eq:1} và công thức \ref{eq:3} và sử dụng batch size 128.
+Kiến trúc tối ưu được tìm thấy với cấu hình là hàm mục tiêu liên tục và mô hình sâu hơn.
+Ta cũng trực tiếp sử dụng kiến trúc tốt nhất của VP SDEs cho sub-VP SDEs, khi hai phương trình SDE rất tương tự nhau.
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=0.8\linewidth]{figures/10.png}
+    \caption{Hiệu ứng của các thành phần khác nhau của kiến trúc cho các mô hình dựa trên điểm số được huấn luyện với VE SDE}
+    \label{fig:10}
+\end{figure}
+
+Kiến trúc của các mô hình chủ yếu dựa trên \citep{ho2020denoising}.
+Ta giới thiệu thêm các thành phần để cực đại hóa các cải thiện tiềm năng cho mô hình dựa trên điểm số.
+
+\begin{enumerate}
+    \item Upsampling and downsampling ảnh với khử răng cưa dựa trên bộ lọc đáp ứng xung hữu hạn (FIR) \citep{zhang2019making}.
+    Ta thực thi và các tham số như trong StyleGAN-v2 \citep{karras2020analyzing}.
+    \item Chia các skip connection bằng $1/\sqrt{2}$.
+    Điều này đã chứng minh hiệu quả trong nhiều mô hình GAN bao gồm ProgressiveGAN \citep{karras2018progressive}, StyleGAN \citep{karras2019style} và StyleGAN-2 \citep{karras2020analyzing}.
+    \item Thay thế các residual block ban đầu trong DDPM bởi các residual block trong BigGAN \citep{brock2018large}.
+    \item Tăng số residual block trên một độ phân giải từ 2 lên 4.
+    \item Kết hợp kiến trúc tăng trưởng dần dần.
+    Ta xét hai kiến trúc tăng trưởng dần dần cho đầu vào: nhảy cách đầu vào và phần dư, và hai kiến trúc cho đầu ra: nhảy cách đầu ra và phần dư.
+    Các kiến trúc này được định nghĩa và thực thi theo StyleGAN-2.
+\end{enumerate}
+
+Ta cũng thử nghiệm learning rate, một thủ thuật được sử dụng trong các mô hình nổi tiếng như ProgressiveGAN \citep{karras2018progressive} và StyleGAN \citep{karras2019style}.
+Tuy nhiên, ta nhận thấy thủ thật này ảnh hưởng tại giai đoạn đầu của thử nghiệm và vì vậy quyết định không tiếp tục thử nghiệm với thủ thuật này.
+
+Tham số của Exponential moving average (EMA) ảnh hưởng lớn đến hiệu năng của mô hình.
+Mô hình được huấn luyện với xáo trộn VE, ta thấy 0.999 tốt hơn 0.9999, với mô hình được huấn luyện với xáo trộn VP thì ngược lại.
+Vì vậy ta sử dụng tham số EMA là 0.999 và 0.9999 tương ứng cho VE và VP.
+
+\subsection{Kết quả trên tập CIFAR-10}
+
+Tất cả các thành phần kiến trúc đã được giới thiệu ở treen có thể cải thiện hiệu năng của mô hình dựa trên điểm số được huấn luyện với VE SDE, được minh họa ở hình \ref{fig:10}.
+Box plot thể hiện sự quan trọng của từng thành phần khi khi thành phần khác biến đổi tự do.
+Trên cả hai tập CIFAR-10 và CelebA, các thành phần bổ sung ta thử nghiệm luôn luôn cải thiện hiệu năng trung bình trên VE SDEs.
+Đối với tương trưởng dần dần, không thấy rõ ràng sự kết hợp của các cấu hình không phỉa lúc nào cũng cho kết quả tốt nhất, nhưng kết quả thừng tốt hơn nếu không sử dụng kiến trúc tăng trưởng dần dần.
+Mô hình dựa trên điểm số tốt nhất dành cho VE SDE 1) sử dụng FIR upsampling/downsampling, 2) thay đổi tỷ lệ skip connection, 3) sử dụng residual block của BigGAN, 4) sử dụng 4 residual block trên từng một độ phân giải thay vì 2, và 5) sử dụng "phần dư" cho đầu vào và không sử dụng kiến trúc tăng trưởng dần dần cho đầu ra.
+Ta gọi mô hình này là NCSN++, theo quy ước đặt tên của mô hình SMLD \citep{song2019generative, song2020improved}
+
+Ta theo thủ tục tương tử để kiểm tra các thành phần kiến trúc cho VP SDEs, ngoại trừ bỏ qua các thử nghiệm trên CelebA vì giới hạn nguồn lực tính toán.
+Kiến trúc NCSN++ làm việc tốt cho VP SDEs, và đứng thứ 4 trong 144 cấu hình.
+Cấu hình tốt nhất, tuy nhiên có cấu trúc hơi khác, không sử dụng FIR upsampling/downsampling và không có kiến trúc tăng trưởng dần dần như NCSN++.
+Ta gọi mô hình này là DDPM++, được đặt theo quy ước đặt tên của \citep{ho2020denoising}.
+
+Mô hình NCSN++ cơ bản với 4 residual block trên một độ phân giải đạt được FID là 2.45 trên tập CIFAR-10,
+trong khi mô hình DDPM++ đạt FID là 2.78.
+Để khớp với các quy ước được sử dụng trong \citep{karras2018progressive,song2019generative} và \citep{ho2020denoising}, ta báo cáo giá trị FID nhỏ nhất trên toàn bộ quá trình huấn luyện thay vì giá trị FID trung bình trên các checkpoint sau 0.5 triệu vòng lặp (được sử dụng để so sánh các mô hình khác nhau của VE SDEs) hoặc giữa 0.25 triệu và 0.5 triệu bước lặp (được sử dụng so sánh các mô hình VP SDE) trong tìm kiếm các kiến trúc phù hợp.
+
+Được chuyển từ hàm mục tiêu rời rạc sang hàm mục tiêu liên tục trong công thức \ref{eq:7} cũng làm cải thiện các giá trị FID cho toàn bộ các phương trình SDE.
+Để đặt điều kiện trên mô hình NCSN++ trên biến thời gian liên tục, ta thay đổi positional embedding thành Fourier feature embedding \citep{tancik2020fourier}.
+Các tham số tỷ lệ của Fourier feature embedding ngẫu nhiên được đặt cố định là 16.
+Ta cũng giảm số bước huấn luyện về 0.95 triệu bước để làm giảm quá khớp.
+Thay đổi này cải thiện FID trên tập CIFAR-10 từ 2.45 thành 2.38 cho NCSN++ được huấn luyện với VE SDE, kết quả tạo ra một mô hihf gọi là NCSN++ cont.
+Hơn nữa, ta có thể cải thiện FID từ 2.38 trở thành 2.20 bằng cách tăng gấp đôi số residual block trên một độ phân giải cho NCSN++ cont, kết quả tạo ra một mô hình tên là NCSN++ cont (deep).
+Tất cả các kết quả định lượng được tổng hợp ở bảng \ref{tab:3}, ta cung cấp các mẫu ngẫu nhiên từ mô hình tốt nhất ở hình 
+
+
+Tương tự, ta có thể tạo điều kiện trên mô hình DDPM++ cho bước thời gian liên tục, kết quả tạo ra mô hình DDPM++ cont.
+Khi huấn luyện với VP SDE, ta cải thiện FID từ 2.78 của DDPM++ thành 2.55.
+Khi huấn luyện với sub-VP SDE, ta thu được FID là 2.61.
+Để thu được kết quả tốt hơn, ta sử dụng bộ giải Euler - Maruyama là bộ dự đoán cho mô hình được huấn luyện liên tục, thay vì bộ dự đoán ancestral sampling hoặc bộ dự đoán khuếch tán ngược.
+Bở vì chiến lược rời rạc hóa của phương pháp DDPM gốc không hớp với phương sai của quá trình liê tục khi $t \rightarrow 0$ làm ảnh hưởng đáng kể FID.
+Được tổng hợp ở bảng \ref{tab:2}, giá trị độ hợp lý là 3.21 và 3.05 bits/dim cho lần lượt VP và sub-VP SDEs.
+Tăng gấp đôi độ sâu và huấn luyện với 0.95 triệu bước lặp, ta cải thiện cả FID và bits/dim cho cả VP và sub-VP SDEs, tạo nên mô hình DDPM++ cont (deep).
+Giá trị điểm số FID là 2.41 cho cả VP và VP SDE.
+Khi huấn luyện VP SDE, đạt được độ hợp lý là 2.99 bits/dim.
+Tất cả các độ hợp lý được tính trên checkpoint cuối cùng của quá trình huấn luyện.
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=0.7\textwidth]{figures/11.png}
+    \caption{Các mẫu CIFAR-10 được tạo ra không có điều kiện từ mô hình NCSN++ cont (deep, VE)}
+    \label{fig:11}
+\end{figure}
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=0.7\textwidth]{figures/12.png}
+    \caption{Các mẫu trên tập CelebA-HQ 1024$\times$1024 từ mô hình NCSN++ được điều chỉnh và huấn luyện với VE SDE.}
+    \label{fig:12}
+\end{figure}
+
+\subsection{Các ảnh có độ phân giải cao} \label{H.3}
+
+Được khích lệ từ thành công của NCSN++ trên tập CIFAR-10, ta tiếp tục thử nghiệm trên tập CelebA-HQ 1024$\times$1024 \citep{karras2018progressive}, một bài toán trước đây chỉ có thể làm được với một số mô hình GAN và VQ-VAE-2 \citep{razavi2019generating}.
+Ta sử dụng batch size là 8, tăng tỷ số EMA lên thành 0.9999 và huấn luyện mô hình tương tự với NCSN++ với hàm mục tiêu liên tục trong công thức \ref{eq:7} trong 2.4 triệu bước lặp.
+Ta sử dụng bộ lấy mẫu PC rời rạc hóa tại 2000 bước với bộ dự đoán khuếch tán ngược, một bước Langevin trên từng bước dự đoán cập nhật là tham số signal-to-noise là 0.15.
+Tham số tỷ lệ cho Fourier feature embedding ngẫu nhiên được cố định là 16.
+Ta sử dụng kiến trúc tăng trưởng dần dần nhảy cách đầu vào cho đầu vào và kiến trúc tăng trưởng dần dần nhảy cách đầu ra cho đầu ra.
+Ta cung cấp một vài mẫu trong hình \ref{fig:12}.
+Mặc dù các mẫu không hoàn hảo (có một vài vết trên khuôn mặt), ta vẫn tin rằng các kết quả này khích lệ và có thể thể hiện tính mở rộng của cách tiếp cận.
+Các công trình tiếp theo tập trung vào các kiến trúc hiệu quả hơn để làm tiến bộ đáng kể khả năng của mô hình sinh dựa trên điểm số trên bài toán này.
+
+\section{Sinh mẫu có điều khiển} \label{I}
+
+Ta xét phương trình SDE thuận với dạng tổng quát sau:
+
+\begin{equation*}
+    d \bold{x} = \bold{f}(\bold{x}, t) dt + \bold{G} (\bold{x}, t) d\bold{w}
+\end{equation*}
+
+và giả sử phân phối trạng thái ban đầu là $p_0(\bold{x}(0) \vert \bold{y})$.
+Hàm mật độ tại thời điểm $t$ là $p_t(\bold{x}(t) \vert \bold{y})$ được lấy điều kiện trên $\bold{y}$.
+Vì vậy, sử dụng \citep{anderson1982reverse}, phương trình SDE đảo ngược thời gian thu được bởi:
+
+\begin{equation} \label{eq:48}
+    d \bold{x} = \lbrace \bold{f}(\bold{x}, t) - \nabla . \lbrack \bold{G}(\bold{x}, t) \bold{G}(\bold{x}, t)^T \rbrack - \bold{G}(\bold{x}, t)\bold{G}(\bold{x}, t)^T \nabla_{\bold{x}} \log p_t (\bold{x} \vert \bold{y}) \rbrace dt + \bold{G}(\bold{x}, t)  d \bar{\bold{w}}
+\end{equation}
+
+Khi $p_t (\bold{x} \vert \bold{y}) \propto p_t(\bold{x}(t)) p(\bold{y} \vert \bold{x}(t))$, hàm điểm số $\nabla_{\bold{x}} \log p_t (\bold{x}(t) \vert \bold{y})$ có thể được tính dễ dàng bởi công thức:
+
+\begin{equation} \label{eq:49}
+    \nabla_{\bold{x}} \log p_t (\bold{x}(t) \vert \bold{y}) = \nabla_{\bold{x}} \log p_t(bold{x}(t)) + \nabla_{\bold{x}} \log p(\bold{y} \vert \bold{x}(t))
+\end{equation}
+
+Thành phần này đóng góp vào phương trình SDE đảo ngược thời gian ở công thức \ref{eq:14} như một trường hợp đặc biệt.
+Tất cả các phương pháp lấy mẫu ta đã thảo luận có thể được áp dụng cho phương trình SDE đảo ngược thời gian có điều kiện cho sinh mẫu dữ liệu.
+
+\subsection{Lấy mẫu trên điều kiện lớp} \label{I.1}
+
+Khi $\bold{y}$ biểu diễn nhãn lớp, ta có thể huấn luyện một bộ phân lớp phụ thuộc vào thời gian $p_t(\bold{y} \vert \bold{x}(t))$ cho lấy mẫu có điều kiện trên lớp.
+Khi phương trình SDE thuận là dễ áp dụng, ta có thể dễ dàng áp dụng một cặp dữ liệu huấn luyện $(\bold{x}(t), \bold{y})$ bừng cách đầu tiên lấy mẫu $(\bold{x}(0), \bold{y})$ từ tập dữ liệu và thu được $\bold{x}(t) \sim p_{0t}(\bold{x}(t) \vert \bold{x}(0))$.
+Sau đó ta có thể sử dụng sự pha trộn của hàm tổn thất cross-entropy trên các bước thời gian khác nhau như công thức \ref{eq:7} để huấn luyện bộ phân loại phụ thuộc vào thời gian $p_t(\bold{y} \vert \bold{x}(t))$.
+
+Để kiểm chứng ý tưởng này, ta huấn luyện một mô hình Wide ResNet \citep{zagoruyko2016wide} (Wide-ResNet-28-10) trên tập CIFAR-10 với xáo trộn VE.
+Bộ phân loại được lấy điều kiện trên $\log \sigma_i$ sử dụng Fourier features ngẫu nhiên \citep{tancik2020fourier} và hàm mục tiêu là tổng của hàm mất mát cross-entropy được lấy mẫu trên nhiều ngưỡng khác nhau.
+Ta cung cấp một đồ thị để hiển thị độ chính xác của bộ phân loại này trên các ngưỡng nhiễu trong hình \ref{fig:13}.
+Mô hình dựa trên điểm số là một NCSN++ (4 residual block trên một độ phân giải) trong bảng \ref{tab:3} và ta sinh ra các mẫu sử dụng bộ lấy mẫu PC với 2000 bước rời rạc hóa.
+Các mẫu có điều kiện trên lớp được cung cấp ở hình \ref{fig:4} và một tập mở rộng của các mẫu có điều kiện được hiển thị ở hình \ref{fig:13}.
+
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[height=0.8\textheight]{figures/13.png}
+    \caption{Các ảnh được tạo ra từ điều kiện trên lớp bằng cách giải phương trình SDE đảo ngược thời gian có điều kiện với bộ lấy mẫu PC.
+    Đường cong thể hiện độ chính xác của bộ phân loại điều kiện khi bị nhiễu trên các ngưỡng nhiễu khác nhau.}
+    \label{fig:13}
+\end{figure}
+
 \end{document}
