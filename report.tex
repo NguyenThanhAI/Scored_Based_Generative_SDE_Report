@@ -455,7 +455,7 @@ Mô hình cho mẫu chất lượng tốt nhất là NCSN++ cont. (deep, VE), c�
 Điều khá ngạc nhiên là ta có thể đạt được FID tốt hơn các mô hình sinh có điều kiện tốt nhất trước đây mà không cần dữ liệu được gán nhãn.
 Kết hợp tất cả các cải tiến lại, ta cũng thu được tập mẫu với độ chân thực cao trên tập CelebA-HQ 1024 $\times$ 1024 từ các mô hình dựa trên dựa trên điểm số (phụ lục ).
 Mô hình tốt nhất của ta cho độ hợp lý là DDPM++ cont. (deep, sub VP), cũng chiều sâu gấp đôi và thu được log của độ hợp lý là 2.99 bits/dim với hàm mục tiêu liên tục trong công thức \ref{eq:7}.
-Với những gì ta biết, đây là độ hợp lý cao nhất trên tập CIFRA-10 được lấy mẫu đều.
+Với những gì ta biết, đây là độ hợp lý cao nhất trên tập CIFAR-10 được lấy mẫu đều.
 
 \section{Sinh mẫu có điều khiển}
 
@@ -1393,4 +1393,138 @@ Các mẫu có điều kiện trên lớp được cung cấp ở hình \ref{fig
     \label{fig:13}
 \end{figure}
 
+\subsection{Xóa môt phần ảnh}
+
+Xóa một phần ảnh là một trường hợp đặc biệt của lấy mẫu có điều kiện.
+Ký hiệu $\Omega(\bold{x})$ và $\bar{\Omega}(\bold{x})$ là số chiều được biết hoặc không biết của $\bold{x}$,
+đặt $\bold{f}_{\Omega}(., t)$ và $\bold{G}_{\Omega}(., t)$ ký hiệu $\bold{f}(., t)$ và $\bold{G}(., t)$ là trong trường hợp không biết số chiều.
+Cho VE/VP SDEs, hệ số trôi $bold{f}(., t)$ là tính theo từng phần tử và hệ số phân tán $\bold{G}(., t)$ là ma trận đường chéo.
+Khi $\bold{f}(., t)$ là theo từng phần tử, $\bold{f}_{\Omega}(., t)$ ký hiệu hàm từng phần tử tương tự chỉ áp dụng cho số chiều không biết.
+Khi $\bold{G}(., t)$ là ma trận đường chéo, $\bold{G}_{\bar{\Omega}}(., t)$ ký hiệu là ma trận con cho trường hợp số chiều không biết.
+
+Để việc xóa một phần ảnh, mục đích của ta là lấy mẫu từ $p(\bar{\Omega}(\bold{x}(0)) \vert \Omega(\bold{x}(0))=\bold{y})$.
+Định nghĩa một quá trình khuếch tán mới $\bold{z} = \bar{\Omega}(\bold{x}(t))$ và chú ý rằng phương trình SDE cho $\bold{z}(t)$ có thể được viết dưới dạng:
+
+\begin{equation*}
+    d \bold{z} = \bold{f}_{\bar{\Omega}} (\bold{z}, t) + \bold{G}_{\bar{\Omega}} (\bold{z}, t) d \bold{w}
+\end{equation*}
+
+Phương trình SDE đảo ngược thời gian được lấy điều kiện trên $\Omega(\bold{x}(0))=\bold{y}$ được cho bởi công thức
+
+\begin{equation*}
+    d \bold{z} = \lbrace \bold{f}_{\bar{\Omega}} (\bold{z}, t) - \nabla . \lbrack \bold{G}_{\bar{\Omega}}(\bold{z}, t)\bold{G}_{\bar{\Omega}}(\bold{z}, t)^T \rbrack - \bold{G}_{\bar{\Omega}}(\bold{z}, t)\bold{G}_{\bar{\Omega}}(\bold{z}, t)^T \nabla_{\bold{z}} \log p_t (\bold{z} \vert \Omega(\bold{z}(0))=\bold{y}) \rbrace dt + \bold{G}_{\bar{\Omega}}(\bold{z}, t) d \bar{\bold{w}}
+\end{equation*}
+
+Mặc dù $p_t(\bold{z}(t) \vert \Omega(\bold{x}(0))=\bold{y})$ về cơ bản là khó thu được tường minh, nhưng có thể xấp xỉ được.
+Đặt $A$ là sự kiện $\Omega(\bold{x}(0))=\bold{y}$. Ta có:
+
+\begin{equation*}
+    \begin{aligned}
+        p_t (\bold{z}(t) \vert \Omega(\bold{x}(0))=\bold{y})=p_t(\bold{z}(t) \vert A) &= \int p_t(\bold{z}(t) \vert \Omega(\bold{x}(t)), A)p_t(\Omega(\bold{x}(t)) \vert A) d \Omega (\bold{x}(t)) \\
+        &= \mathbb{E}_{p_t(\Omega(\bold{x}(t)) \vert A)} \lbrack p_t(\bold{z}(t) \vert \Omega(\bold{x}(t)), A) \rbrack \\
+        &\approx \mathbb{E}_{p_t(\Omega(\bold{x}(t)) \vert A)} \lbrack p_t(\bold{z}(t) \vert \Omega(\bold{x}(t))) \rbrack \\
+        &\approx p_t(\bold{z}(t) \vert \hat{\Omega}(\bold{x}(t)))
+    \end{aligned}
+\end{equation*}
+
+với $\hat{\Omega}(\bold{x}(t))$ là một mẫu ngẫu nhiên từ $p_t(\Omega(\bold{x}(t)) \vert A)$ thường là một phân phối rất dễ dàng thu được.
+Vì vậy:
+
+\begin{equation*}
+    \begin{aligned}
+        \nabla_{\bold{z}} \log p_t(\bold{z}(t) \vert \Omega(\bold{x}(0))=\bold{y}) &\approx \nabla_{\bold{z}} \log p_t(\bold{z}(t) \vert \hat{\Omega}(\bold{x}(t)))\\
+        &= \nabla_{\bold{z}} \log p_t([\bold{z}(t); \hat{\Omega}(\bold{x}(t))])
+    \end{aligned}
+\end{equation*}
+
+với $[\bold{z}(t); \hat{\Omega}(\bold{x}(t))]$ ký hiệu một vector $\bold{u}(t)$ sao cho $\Omega(\bold{u}(t))=\hat{\Omega}(\bold{x}(t))$ và $\bar{\Omega}(\bold{u}(t))=\bold{z}(t)$ và đồng nhất thức đúng vì $\nabla_{\bold{z}} \log p_t ([\bold{z}(t); \hat{\Omega}(\bold{x}(t))])=\nabla_{\bold{z}} \log p_t (\bold{z}(t) \vert \hat{\Omega}(\bold{x}(t))) + \nabla_{\bold{z}} \log p(\hat{\Omega}(\bold{x}(t)))=\nabla_{\bold{z}} \log p_t (\bold{z}(t) \vert \hat{\Omega}(\bold{x}(t)))$
+
+Ta biểu diễn một số kết quả inpainting ở hình \ref{fig:14} và hình \ref{eq:15}.
+
+\subsection{Bài toán tô màu}
+
+Bài toán tô màu là trường hợp đặc biệt của xóa một phần ảnh, ngoại trừ việc biết trước chiều dữ liệu.
+Ta có thể tách chiều dữ liệu sử dụng một phép biến đổi tuyến tính trực giao hóa để ánh xạ ảnh xám thành các kênh riêng biệt trong một không gian khác, sau đó thực hiện xóa một ảnh ảnh để hoàn thành các kênh khác trước khi biến đổi mọi thứ về không gian ảnh ban đầu.
+Ma trận trực giao ta sử dụng để tách các kênh màu là:
+
+\begin{equation*}
+    \begin{pmatrix}
+        0.577 & -0.816 & 0 \\
+        0.577 & 0.408 & 0.707 \\
+        0.577 & 0.408 & -0.707
+    \end{pmatrix}
+\end{equation*}
+
+Bởi vì các phép biến đổi đều là các ma trận trực giao, quá trình Wiener chuẩn tắc $\bold{w}(t)$ vẫn là một quá trình Wiener chuẩn tắc trong không gian đã được biến đổi, cho phép chúng ta xây dựng một phương trình SDE và sử dụng phương pháp xóa ảnh tương tự như trong phụ lục .
+Ta cung các một tập các kết quả tô màu ở hình \ref{fig:16} và hình \ref{fig:17}
+
+\subsection{Giải các bài toán ngược tổng quát}
+
+Giả sử ta có hai biến ngẫu nhiên $\bold{x}$ và $\bold{y}$ và ta biết quá trình thuận của sinh ra $\bold{y}$ từ $\bold{x}$ được cho bởi $p(\bold{y} \vert \bold{x})$.
+Bài toán ngược là thu được $\bold{x}$ từ $\bold{y}$ và sinh ra các mẫu từ phân phối $p(\bold{x} \vert \bold{y})$.
+Về mặt nguyên lý, ta có thể ước lượng phân phối tiên nghiệm $p(\bold{x})$ và thu được $p(\bold{x} \vert \bold{y})$ sử dụng quy tắc Bayes: $p(\bold{x} \vert \bold{y})=p(\bold{x})p(\bold{y} \vert \bold{x}) / p(\bold{y})$.
+Tuy nhiên trong thực tế, ta ước lượng phân phối tiên nghiệm và thực hiện suy luận Bayes là không dễ dàng.
+
+Tận dụng công thức \ref{eq:48}, mô hình sinh dựa trên điểm số cung cấp một cách để giải bài toán ngược.
+Giả sử ta có một quá trình khuếch tán $\lbrace \bold{x}(T) \rbrace_{t=0}^T$ được tạo ra bằng cách gây xáo trộn $\bold{x}$ bằng một phương trình SDE và một mô hình dựa trên điểm số $\bold{s}_{\boldsymbol{\theta}^{\ast}}(\bold{x}, t)$ được huấn luyện để xấp xỉ $\nabla_{\bold{x}} p_t(\bold{x}(t))$.
+Một khi ta đã có ước lượng của $\nabla_{\bold{x}} \log p_t(\bold{x}(t) \vert \bold{y})$, ta có thể mô phỏng phương trình SDE đảo ngược thời gian trong công thức ref{eq:48} để lấy mẫu từ phân phối $p_0(\bold{x}(0) \vert \bold{y})=p(\bold{x} \vert \bold{y})$.
+Để thu được ước lượng này, ta trước hết cần quan sát rằng:
+
+\begin{equation*}
+    \nabla_{\bold{x}} p_t (\bold{x}(t) \vert \bold{y}) = \nabla_{\bold{x}} \log \int p_t(\bold{x}(t) \vert \bold{y}(t), \bold{y}) p(\bold{y}(t) \vert \bold{y}) d \bold{y}(t)
+\end{equation*}
+
+với $\bold{y}(t)$ được định nghĩa thông qua $\bold{x}(t)$ và quá trình thuận $p(\bold{y}(t) \vert \bold{x}(t))$. Ta giả định hai điều kiện:
+
+\begin{itemize}
+    \item $p(\bold{y}(t) \vert \bold{y})$ dễ thu được.
+    Ta có thể thu được phân phối này từ tương tác giữa quá trình thuận  và phương trình SDE, giống như trường hợp xóa một phần ảnh hoặc tô màu ảnh.
+    \item $p_t(\bold{x}(t) \vert \bold{y}(t), \bold{y}) \approx p_t(\bold{x}(t) \vert \bold{y}(t))$.
+    Với $t$ nhỏ, $\bold{y}(t)$ gần như bằng với $\bold{y}$ nên xấp xỉ trên gần đúng.
+    Với $t$ lớn, $\bold{y}$ trở nên rất xa với $\bold{x}(t)$ trong xích Markov,
+    và ảnh hưởng nhỏ hơn trên $\bold{x}(t)$.
+    Hơn nữa, sai số xấp xỉ cho $t$ lớn ít quan trọng cho mẫu được sinh ra khi mà nó được sử dụng ở ban đầu ở quá trình lấy mẫu.
+\end{itemize}
+
+Với hai giả định trên, ta có:
+
+\begin{equation} \label{eq:50}
+    \begin{aligned}
+        \nabla_{\bold{x}} \log p_t (\bold{x}(t) \vert \bold{y}) &\approx \nabla_{\bold{x}} \log \int p_t(\bold{x}(t) \vert \bold{y}(t)) p(\bold{y}(t) \vert \bold{y}) d\bold{y} \\
+        &\approx \nabla_{\bold{x}} \log p_t(\bold{x}(t) \vert \hat{\bold{y}}(t)) \\
+        &= \nabla_{\bold{x}} \log p_t(\bold{x}(t)) + \nabla_{\bold{x}} \log p_t (\hat{\bold{y}}(t) \vert \bold{x}(t)) \\
+        &\approx \bold{s}_{\boldsymbol{\theta}^{\ast}} (\bold{x}(t), t) + \nabla_{\bold{x}} \log p_t (\hat{\bold{y}}(t) \vert \bold{x}(t))
+    \end{aligned}
+\end{equation}
+
+với $\hat{\bold{y}}(t)$ là một mẫu từ $p(\bold{y}(t) \vert \bold{y})$.
+Bây giờ ta có thể thế công thức \ref{eq:50} vào công thức \ref{eq:48} và giải phương trình SDE đảo ngược thời gian kết quả để tạo ra mẫu dữ liệu từ $p(\bold{x} \vert \bold{y})$.
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=0.8\linewidth]{figures/14.png}
+    \caption{Các kết quả inpainting cho các ảnh bedroom 256 $\times$ 256}
+    \label{fig:14}
+\end{figure}
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=0.8\linewidth]{figures/15.png}
+    \caption{Các kết quả inpainting cho các ảnh church 256 $\times$ 256}
+    \label{fig:15}
+\end{figure}
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=0.8\linewidth]{figures/16.png}
+    \caption{Các kết quả tô màu cho các ảnh bedroom 256 $\times$ 256}
+    \label{fig:16}
+\end{figure}
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=0.8\linewidth]{figures/16.png}
+    \caption{Các kết quả tô màu cho các ảnh church 256 $\times$ 256}
+    \label{fig:17}
+\end{figure}
 \end{document}
