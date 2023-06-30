@@ -185,8 +185,8 @@ Quá trình khuếch tán có thể được mô hình hóa là nghiệm của p
     d \bold{x} = \bold{f} (\bold{x}, t) dt + g(t) d \bold{w}
 \end{equation}
 
-với $\tilde{\bold{w}}$ là một quá trình Wiener chuẩn tắc (hay còn được gọi là chuyển Brown), $\bold{f}(.,t): \mathbb{R}^d \rightarrow \mathbb{R}^d$ là một hàm vector được gọi là hệ số độ trôi của $\bold{x}(t)$ và $g(.): \mathbb{R} \rightarrow \mathbb{R}$ là một hàm vô hướng được gọi là hệ số khuếch tán của $\bold{x}(t)$.
-Để cho thuận tiện cho việc trình bày ta giả sử hệ số khuếch tán là một số vô hướng (thay vì là một ma trận $d \times d$) và không phụ thuộc vào $\bold{x}$, nhưng lý thuyết của ta có thể được tổng quát hóa và vẫn đúng trong trường hợp này (phụ lục ).
+với $\tilde{\bold{w}}$ là một quá trình Wiener chuẩn tắc (hay còn được gọi là chuyển động Brown), $\bold{f}(.,t): \mathbb{R}^d \rightarrow \mathbb{R}^d$ là một hàm vector được gọi là hệ số độ trôi của $\bold{x}(t)$ và $g(.): \mathbb{R} \rightarrow \mathbb{R}$ là một hàm vô hướng được gọi là hệ số khuếch tán của $\bold{x}(t)$.
+Để cho thuận tiện cho việc trình bày ta giả sử hệ số khuếch tán là một số vô hướng (thay vì là một ma trận $d \times d$) và không phụ thuộc vào $\bold{x}$, nhưng lý thuyết của ta có thể được tổng quát hóa và vẫn đúng trong trường hợp này (phụ lục \ref{A}).
 Phương trình SDE có một nghiệm riêng mạnh chừng nào các hệ số vẫn là Lipschitz toàn cục trong cả trạng thái và thời gian \citep{oksendal2003stochastic}.
 Từ sau đây ta ký hiệu $p_t (\bold{x})$ là hàm mật độ xác suất của $\bold{x}(t)$ và sử dụng $p_{st}(\bold{x}(t) \vert \bold{x}(s))$ để ký hiệu nhân chuyển tiếp từ $\bold{x}(s)$ sang $\bold{x}(t)$, với $0 \leq s < s \leq T$.
 
@@ -223,12 +223,12 @@ Ta cần chú ý rằng công thức \ref{eq:7} sử dụng khớp điểm số 
 Ta thường cũng cần phải biết nhân chuyển tiếp $p_{0t} (\bold{x}(t) \vert \bold{x}(0))$ để giải phương trình \ref{eq:7} một cách hiệu quả.
 Nếu $\bold{f}(.,t)$ là hàm affine, nhân chuyển tiếp luôn luôn là phân phối Gaussian mà trung bình và phương sai thường được biết trong dạng đóng và có thể thu được bằng các kỹ thuật chuẩn tắc (xem mục 5.5  trong \cite{sarkka2019applied}).
 Với phương trình SDE tổng quát hơn, ta có thể giải phương trình Kolmogorov thuận \citep{oksendal2003stochastic} để thu được $p_{0t} (\bold{x}(t) \vert \bold{x}(0))$.
-Một cách khác, ta có thể mô phỏng phương trình SDE để lấy mẫu từ $p_{0t}(\bold{x}(t) \vert \bold{x}(0))$ và thay thế thành phần khớp điểm số khử nhiễu trong \ref{eq:7} với khớp điểm số theo lát để huấn luyện mô hình mà bỏ qua việc tính toán $\nabla_{\bold{x}(t)} \log p_{0t} (\bold{x}(t) \vert \bold{x}(0))$ (xem phụ lục ).
+Một cách khác, ta có thể mô phỏng phương trình SDE để lấy mẫu từ $p_{0t}(\bold{x}(t) \vert \bold{x}(0))$ và thay thế thành phần khớp điểm số khử nhiễu trong \ref{eq:7} với khớp điểm số theo lát để huấn luyện mô hình mà bỏ qua việc tính toán $\nabla_{\bold{x}(t)} \log p_{0t} (\bold{x}(t) \vert \bold{x}(0))$ (xem phụ lục \ref{A}).
 
 \subsection{Một số ví dụ: VE, VP SDE và các SDE khác}
 
 Nhiễu được dùng để làm xáo trộn dữ liệu trong SMLD và DDPM có thể được xem là phiên bản rời rạc hóa của hai phương trình SDE khác nhau.
-Ta sẽ nói ngắn gọn về phần này và chi tiết dudocj trình bày ở phụ lục .
+Ta sẽ nói ngắn gọn về phần này và chi tiết dudocj trình bày ở phụ lục \ref{B}.
 
 Khi ta sử dụng $N$ mức nhiễu, từng nhân xáo trộn dữ liệu $p_{\sigma_i}(\bold{x} \vert \bold{x}_0)$ của SMLD tương ứng với phân phối của $\bold{x}_i$ theo xích Markov sau:
 
@@ -257,7 +257,7 @@ Khi $N \rightarrow \infty$, phương trình \ref{eq:10} hội tụ về phương
 \end{equation}
 
 vì vậy, nhiễu dùng để xáo trộn được dùng trong SMLD và DDPM tương ứng với sự rời rạc hóa của phương trình SDE trong công thức \ref{eq:9} và \ref{eq:11}.
-Một điều thú vị là phương trình SDE của công thức \ref{eq:9} luôn luôn tạo ra một quá trình với phương sai bùng nổ khi $t \rightarrow \infty$, trong khi phương trình ở công thức \ref{eq:11} thu được một quá trình với phương sai không đổi là một khi phân phối ban đầu có phương sai là một (chứng minh ở phụ lục ).
+Một điều thú vị là phương trình SDE của công thức \ref{eq:9} luôn luôn tạo ra một quá trình với phương sai bùng nổ khi $t \rightarrow \infty$, trong khi phương trình ở công thức \ref{eq:11} thu được một quá trình với phương sai không đổi là một khi phân phối ban đầu có phương sai là một (chứng minh ở phụ lục \ref{B}).
 Vì sự khác biệt này, kể từ đây ta sẽ gọi phương trình ở công thức \ref{eq:9} là Variance Exploding (VE) SDE, và phương trình ở công thức \ref{eq:11} là Variance Preserving (VP) SDE.
 
 Lấy cảm hứng từ VP SDE, ta đề xuất một loại phương trình SDE mới đặc biệt tốt trên độ hợp lý (mục ) được cho bởi công thức:
@@ -306,10 +306,10 @@ Các bộ giải sử dụng phương pháp số tạo ra một quỹ đạo x�
 Tồn tại nhiều phương pháp số đa chức năng để giải phương trình SDE như Euler-Maruyama và phương pháp Runge-Kutta ngẫu nhiên, tương ứng với các cách rời rạc hóa khác nhau của động học ngẫu nhiên.
 Ta có thể áp dụng bất kỳ cách nào cho phương trình SDE đảo ngược thời gian để sinh mẫu dữ liệu.
 
-Ancestral sampling, là phương pháp lấy mẫu của DDPM trong công thức \ref{eq:4} thực tế tương ứng với một phương pháp rời rạc hóa đặc biệt của phương trình VP SDE đảo ngược thời gian (công thức \ref{eq:11}) (phụ lục ).
+Ancestral sampling, là phương pháp lấy mẫu của DDPM trong công thức \ref{eq:4} thực tế tương ứng với một phương pháp rời rạc hóa đặc biệt của phương trình VP SDE đảo ngược thời gian (công thức \ref{eq:11}) (phụ lục \ref{E}).
 Để thu được luật lấy mẫu sử dụng ancestral sampling cho phương trình SDE mới không phải là việc dễ dàng.
-Để khắc phụ điều này, ta đề xuất \textit{bộ lấy mẫu khuếch tán ngược} (chi tiết trong phụ lục ), bộ lấy mẫu này rời rạc hóa phương trình SDE đảo ngược thời gian theo cùng cách với phương trình thuận, và vì vậy có thể đễ dàng thực hiện sử dụng kết quả rời rạc hóa của quá trình thuận
-Hình \ref{tab:1}, bộ lấy mẫu khuếch tán ngược thể hiện tốt hơn một chút so với ancestral sampling cho cả hai mô hình SMLD và DDPM trên CIFAR-10 (mô hình DDPM sử dụng ancestral sampling cũng có thể áp dụng cho mô hình SMLD, xem phụ lục ).
+Để khắc phụ điều này, ta đề xuất \textit{bộ lấy mẫu khuếch tán ngược} (chi tiết trong phụ lục \ref{E}), bộ lấy mẫu này rời rạc hóa phương trình SDE đảo ngược thời gian theo cùng cách với phương trình thuận, và vì vậy có thể đễ dàng thực hiện sử dụng kết quả rời rạc hóa của quá trình thuận
+Hình \ref{tab:1}, bộ lấy mẫu khuếch tán ngược thể hiện tốt hơn một chút so với ancestral sampling cho cả hai mô hình SMLD và DDPM trên CIFAR-10 (mô hình DDPM sử dụng ancestral sampling cũng có thể áp dụng cho mô hình SMLD, xem phụ lục \ref{F}).
 
 \subsection{Bộ lấy mẫu dự đoán - căn chỉnh}
 
@@ -319,7 +319,7 @@ Khi ta có một mô hình dựa trên điểm số $\bold{s}_{\boldsymbol{\thet
 Cụ thể, tại từng bước thời gian, bộ giải phương trình SDE bằng phương pháp số ban đầu tạo ra một ước lượng của mẫu tại bước tiếp theo, đóng vai trò là một "bộ dự đoán".
 Sau đó, ta dùng MCMC dựa trên điểm số căn chỉnh phân phối cận biên của mẫu đã được ước lượng, đóng vai trò là "bộ căn chỉnh".
 Ý tưởng tương tự với phương pháp dự đoán - căn chỉnh, một họ của các kỹ thuật phương pháp số cho giải hệ phương trình \citep{allgower2012numerical} và ta đặt một tên tương tự cho thuật toán lấy mẫu là bộ lấy mẫu \textit{dự đoán - căn chỉnh}.
-Mã giả được được trình bày ở phụ lục .
+Mã giả được được trình bày ở phụ lục \ref{G}.
 Bộ lấy mẫu PC tổng quát hóa các phương pháp lấy mẫu ban đầu của SMLD và DDPM: các phương pháp trước đây sử dụng một hàm đồng nhất là hàm dự đoán và tôi luyện động học Langevin làm bộ căn chỉnh, trong khi các phương pháp sau sử dụng ancestral sampling là bộ dự đoán và hàm đồng nhất là bộ căn chỉnh.
 
 Ta sẽ thử bộ lấy mẫu PC trên các mô hình SMLD và DDPM (thuật toán và thuật toán trong phụ lục) được huấn luyện với hàm mục tiêu rời rạc ban đầu trong các công thức \ref{eq:1} và \ref{eq:3}.
@@ -434,13 +434,13 @@ Ta cung cấp các kiểm chứng thực nghiệm bổ sung về tính chất n�
 \end{figure}
 
 \textbf{Lấy mẫu hiệu quả} Với một ODE neuron, ta có thể lấy mẫu $\bold{x}(0) \sim p_0$ bằng cách giải phương trình ở công thức \ref{eq:13} từ các điều kiện $\bold{x}(T) \sim p_T$.
-Sử dụng một chiến lược rời rạc hóa cố định ta có thể tạo ra các mẫu có khả năng cạnh tranh cao, đặc biệt khi sử dụng cùng vơi shbooj hiệu chỉnh (bảng \ref{tab:1}, "bộ lấy mẫu dòng xác suất", chi tiết ở phụ lục).
-Sử dụng một bộ giải phương trình ODE dạng hộp đen \citep{dormand1980family} không những chỉ tạo ra những mẫu chất lượng cao (\ref{tab:2}, chi tiết ở phụ lục ) mà còn cho phép ta đánh đổi độ chính xác cho tính hiệu quả.
+Sử dụng một chiến lược rời rạc hóa cố định ta có thể tạo ra các mẫu có khả năng cạnh tranh cao, đặc biệt khi sử dụng cùng vơi shbooj hiệu chỉnh (bảng \ref{tab:1}, "bộ lấy mẫu dòng xác suất", chi tiết ở phụ lục \ref{D.3}).
+Sử dụng một bộ giải phương trình ODE dạng hộp đen \citep{dormand1980family} không những chỉ tạo ra những mẫu chất lượng cao (\ref{tab:2}, chi tiết ở phụ lục \ref{D.4}) mà còn cho phép ta đánh đổi độ chính xác cho tính hiệu quả.
 Với khả năng chống chịu sai lệch cao hơn, số hàm đánh giá có thể được giảm hơn 90 \% mà không cần làm ảnh hưởng chất lượng của mẫu (hình \ref{fig:3})
 
 \subsection{Các cải thiện về kiến trúc của mô hình}
 
-Ta khám phá nhiều thiết kế kiến trúc mới cho mô hình dựa trên điểm số sử dụng cả VE và VP SDEs (chi tiết ở phụ lục ), với ta huấn luyện các mô hình với các hàm mục tiêu rời rạc như SMLD/DDPM.
+Ta khám phá nhiều thiết kế kiến trúc mới cho mô hình dựa trên điểm số sử dụng cả VE và VP SDEs (chi tiết ở phụ lục \ref{H}), với ta huấn luyện các mô hình với các hàm mục tiêu rời rạc như SMLD/DDPM.
 Ta áp dụng trực tiếp các kiến trúc của VP SDEs cho sub-VP SDEs vì tính tương đồng của hai mô hình này.
 Kiến trúc tối ưu ta thấy cho VE SDE được gọi là NCSN++ thu được FID là 2.45 trên CIFAR-10, với bộ lấy mẫu PC, trong khi kiến trúc tối ưu cho VP SDE được gọi là DDPM++ đạt được kết quả với FID là 2.78.
 
@@ -453,7 +453,7 @@ Như được trình bày trong b ảng \ref{tab:3}, VE SDEs thường cho các 
 
 Mô hình cho mẫu chất lượng tốt nhất là NCSN++ cont. (deep, VE), có chiều sâu gấp đôi và tạo kỷ lục mới cho cả inception score và FID cho bài toán sinh mẫu không có điều kiện trên tập CIFAR-10.
 Điều khá ngạc nhiên là ta có thể đạt được FID tốt hơn các mô hình sinh có điều kiện tốt nhất trước đây mà không cần dữ liệu được gán nhãn.
-Kết hợp tất cả các cải tiến lại, ta cũng thu được tập mẫu với độ chân thực cao trên tập CelebA-HQ 1024 $\times$ 1024 từ các mô hình dựa trên dựa trên điểm số (phụ lục ).
+Kết hợp tất cả các cải tiến lại, ta cũng thu được tập mẫu với độ chân thực cao trên tập CelebA-HQ 1024 $\times$ 1024 từ các mô hình dựa trên dựa trên điểm số (phụ lục \ref{H.3}).
 Mô hình tốt nhất của ta cho độ hợp lý là DDPM++ cont. (deep, sub VP), cũng chiều sâu gấp đôi và thu được log của độ hợp lý là 2.99 bits/dim với hàm mục tiêu liên tục trong công thức \ref{eq:7}.
 Với những gì ta biết, đây là độ hợp lý cao nhất trên tập CIFAR-10 được lấy mẫu đều.
 
@@ -470,7 +470,7 @@ Tổng quát, ta có thể sử dụng công thức \ref{eq:14} để giải m�
 một khi được biết một ước lượng của gradient của quá trình thuận $\nabla_{\bold{x}} \log p_t (\bold{y} \vert \bold{x}(t))$.
 Trong một số trường hợp, ta có thể huấn luyện một mô hình riêng biệt để học quá trình thuận $p_t(\bold{y} \vert \bold{x}(t))$ và tính gradient của quá trình này.
 Mặt khác, ta có thể ước lượng gradient với kinh nghiệm và kiến thức chuyên gia về một miền dữ liệu.
-Ở phụ lục , ta cung cấp các phương pháp được ứng dụng rộng rãi để thu được những ước lượng mà không cần huấn luyện mô hình phụ.
+Ở phụ lục \ref{I.4}, ta cung cấp các phương pháp được ứng dụng rộng rãi để thu được những ước lượng mà không cần huấn luyện mô hình phụ.
 
 \begin{figure}[h!]
     \centering
@@ -487,13 +487,13 @@ sinh mẫu có điều kiện dựa trên lớp, xóa một phần ảnh và tô
 Khi $\bold{y}$ biểu diễn nhãn lớp, ta có thể huấn luyện một bộ phân loại phụ thuộc vào thời gian $p_t(\bold{y} \vert \bold{x}(t))$ cho bài toán lấy mẫu điều kiện trên lớp.
 Khi phương trình thuận SDE dễ giải, ta có thể dễ dàng tạo ra dữ liệu huấn luyện $(\bold{x}(t), \bold{y})$ cho bộ phân loại phụ thuộc vào thời gian bởi lấy mẫu ban đầu $\bold{x}(0), \bold{y}$ từ tập dữ liệu và sau đó lấy mẫu $\bold{x}(t) \sim p_{0t} (\bold{x}(t) \vert \bold{x}(0))$.
 Sau đó, ta có thể sử dụng một sự kết ợp của các hàm mất mát cross-entropy trên các bước thời gian khác nhau, như công thức \ref{eq:7}, để huấn luyện bộ phân loại phụ thuộc theo thời gian $p_t(\bold{y} \vert \bold{x}(t))$.
-Ta cung cấp các mẫu được sinh ra có điều kiện dựa trên lớp trên tập CIFAR-10 ở hình \ref{fig:4} (hình trái) và các thông tin chi tiết hơn về kết quả ở phụ lục .
+Ta cung cấp các mẫu được sinh ra có điều kiện dựa trên lớp trên tập CIFAR-10 ở hình \ref{fig:4} (hình trái) và các thông tin chi tiết hơn về kết quả ở phụ lục \ref{I}.
 
 Xóa một phần thông tin ảnh là một trường hợp đặc biệt của lấy mẫu có điều kiện.
 Giả sử ta có một điểm dữ liệu không hoàn chỉnh $\bold{y}$ với chỉ một tập con, $\Omega(\bold{y})$ biết trước.
-Lượng dữ liệu bị xóa từ ảnh để lấy mẫu từ $p(\bold{x}(0) \vert \Omega(\bold{y}))$, ta có thể thực hiện sử dụng một mô hình sinh không có điều kiện (xem phụ lục ).
+Lượng dữ liệu bị xóa từ ảnh để lấy mẫu từ $p(\bold{x}(0) \vert \Omega(\bold{y}))$, ta có thể thực hiện sử dụng một mô hình sinh không có điều kiện (xem phụ lục \ref{I.2}).
 Bài toán tô màu là một trường hợp đặc biệt của xóa một phần thông tin ảnh, ngoại trừ chiều dữ liệu đã biết.
-Ta có thể chiều dữ liệu với một phép biến đổi tuyến tính trực giao và thực hiện xóa thông tin ảnh trong không gian đã bị biến đổi (chi tiết ở trong phụ lục ).
+Ta có thể chiều dữ liệu với một phép biến đổi tuyến tính trực giao và thực hiện xóa thông tin ảnh trong không gian đã bị biến đổi (chi tiết ở trong phụ lục \ref{I.3}).
 Hình \ref{fig:4} (bên phải) cho biết kết quả cho bài toán xóa thông tin ảnh và tô màu thu được với mô hình dựa trên điểm số phụ thuộc vào thời gian không có điều kiện.
 
 \section{Kết luận}
@@ -514,16 +514,16 @@ các công trình trong tương lai có thể tận dụng từ các phương ph
 \appendix
 
 Ta trình bày một số phụ lục với các chi tiết bổ sung, chứng minh công thức và kết quả.
-Khung làm việc của ta cho phép phương trình SDE tổng quan với các hệ số khuếch tán có giá trị dạng ma trận phụ thuộc vào trạng thái, trong đó ta cung cấp một số nhận xét chi tiết trong phụ lục .
-Ta cung cấp chứng minh chi tiết của VE, VP, và sub-VP SDEs trong phụ lục , và ta thảo luận cách sử dụng từ quan điểm thực tiễn ở phụ lục .
-Ta xây dựng công thức dòng xác suất trong phụ lục , bao gồm chứng minh thu được công thức dòng xác suất của phương trình ODE (phụ lục ), tính toán chính xác độ hợp lý (phụ lục ), lấy mẫu dòng xác suất với chiến lược rời rạc hóa cố định (phụ lục ),
-lấy mẫu bằng bộ giải phương trinh ODE là một hộp đen (phụ lục ), và xác minh các thử nghiệm trên mã hóa có thể nhận dạng duy nhất (phụ lục ).
-Ta cung cấp mô tả đầy đủ về bộ lấy mẫu quá trình khuếch tán ngược trong phụ lục ,
-bộ lấy mẫu ancestral loại DDPM cho mô hình SMLD trong phụ lục , và bộ lấy mẫu dự đoán - hiệu chỉnh trong phụ lục .
-Ta giải thích các kiến trúc của mô hình và các cài đặt thử nghiệm chi tiết trong phụ lục ,
+Khung làm việc của ta cho phép phương trình SDE tổng quan với các hệ số khuếch tán có giá trị dạng ma trận phụ thuộc vào trạng thái, trong đó ta cung cấp một số nhận xét chi tiết trong phụ lục \ref{A}.
+Ta cung cấp chứng minh chi tiết của VE, VP, và sub-VP SDEs trong phụ lục \ref{B}, và ta thảo luận cách sử dụng từ quan điểm thực tiễn ở phụ lục \ref{C}.
+Ta xây dựng công thức dòng xác suất trong phụ lục \ref{D}, bao gồm chứng minh thu được công thức dòng xác suất của phương trình ODE (phụ lục \ref{D.1}), tính toán chính xác độ hợp lý (phụ lục \ref{D.2}), lấy mẫu dòng xác suất với chiến lược rời rạc hóa cố định (phụ lục \ref{D.3}),
+lấy mẫu bằng bộ giải phương trinh ODE là một hộp đen (phụ lục \ref{D.4}), và xác minh các thử nghiệm trên mã hóa có thể nhận dạng duy nhất (phụ lục \ref{D.5}).
+Ta cung cấp mô tả đầy đủ về bộ lấy mẫu quá trình khuếch tán ngược trong phụ lục \ref{E},
+bộ lấy mẫu ancestral loại DDPM cho mô hình SMLD trong phụ lục \ref{F}, và bộ lấy mẫu dự đoán - hiệu chỉnh trong phụ lục \ref{G}.
+Ta giải thích các kiến trúc của mô hình và các cài đặt thử nghiệm chi tiết trong phụ lục \ref{H},
 với các mẫu độ phân giải 1024 $\times$ 1024 trên tập CelebA-HQ.
-Cuối cùng, ta trình bày chi tiết về các thuật toán sinh mẫu có điều khiển trong phụ lục  và bao gồm các kết quả mở rộng cho sinh dữ liệu dựa trên lớp (phụ lục ),
-bài toán tô màu (phụ lục ) và chiến lực cho giải bài toán ngược tổng quát (phụ lục ).
+Cuối cùng, ta trình bày chi tiết về các thuật toán sinh mẫu có điều khiển trong phụ lục \ref{I} và bao gồm các kết quả mở rộng cho sinh dữ liệu dựa trên lớp (phụ lục \ref{I.1}), inpainting (phụ lục \ref{I.2})
+bài toán tô màu (phụ lục \ref{I.3}) và chiến lực cho giải bài toán ngược tổng quát (phụ lục I.4).
 
 \section{Khung làm việc cho phương trình SDE tổng quát} \label{A}
 
@@ -546,7 +546,7 @@ Theo \citep{anderson1982reverse}, phương trình SDE đảo ngược thời gia
 
 với ta định nghĩa $\nabla . \bold{F}(\bold{x}) := (\nabla. \bold{f}^1 (\bold{x}), \nabla. \bold{f}^2 (\bold{x}), \dots, \nabla. \bold{f}^d (\bold{x}))^T$ cho hàm giá trị ma trận $\bold{F}(\bold{x}) := (\bold{f}^1 (\bold{x}), \bold{f}^2 (\bold{x}), \dots, \bold{f}^d (\bold{x}))^T$ xuyên suốt công trình.
 
-Dòng xác suất phương trình ODE tương ứng với công thức \ref{eq:15} có dạng sau (công thức \ref{eq:13}, chứng minh ở phụ lục ):
+Dòng xác suất phương trình ODE tương ứng với công thức \ref{eq:15} có dạng sau (công thức \ref{eq:13}, chứng minh ở phụ lục \ref{D.1}):
 
 \begin{equation} \label{eq:17}
     d \bold{x} = \Big \lbrace \bold{f}(\bold{x}, t) - \dfrac{1}{2} \nabla . \lbrack \bold{G}(\bold{x}, t) \bold{G}(\bold{x}, t)^T  \rbrack - \bold{G}(\bold{x}, t) \bold{G}(\bold{x}, t)^T \nabla_{x} \log p_t(\bold{x}) \Big \rbrace dt
@@ -862,7 +862,7 @@ Vì vậy, bằng cách áp dụng bộ ước lượng Skilling - Hutchinson �
 
 Trong thử nghiệm của ta, ta sử dụng bộ giải RK45 ODE \citep{dormand1980family} được cung cấp bởi hàm scipy.integrate.solve\_ivp trong mọi trường hợp.
 Giá trị bits/dim trong bảng \ref{tab:2} được tính với atol=1e-5 và rtol=1e-5 cũng như \citep{grathwohl2018ffjord}.
-Để thu được kết quả độ hợp lý của mô hình trong bảng \ref{tab:2}, ta lấy trung bình bits/dim thu được trên tập test trên năm lần chạy khác nhau với $\epsilon=10^{-5}$ (định nghĩa $\epsilon$ ở phụ lục ).
+Để thu được kết quả độ hợp lý của mô hình trong bảng \ref{tab:2}, ta lấy trung bình bits/dim thu được trên tập test trên năm lần chạy khác nhau với $\epsilon=10^{-5}$ (định nghĩa $\epsilon$ ở phụ lục \ref{C}).
 
 \subsection{Lấy mẫu dòng xác suất} \label{D.3}
 
@@ -913,7 +913,7 @@ Tương tự, với mô hình DDPM, ta có:
 
 Để tạo ra hình \ref{fig:3}, ta sử dụng một mô hình DDPM được huấn luyện trên tập CelebA-HQ 256$\times$256 với cùng cấu hình trong \citep{ho2020denoising}.
 Tất cả các điểm FID của mô hình của ta trong bảng \ref{tab:2} được tính trên các mẫu từ bộ giải RK45 PDE được thực thi trong scipy.integrate.solve\_ivp với atol=1e-5 và rtol=1e-5.
-Ta sử dụng $\epsilon=10^{-5}$ cho VE SDEs và $\epsilon=10^{-3}$ cho VP SDEs (phụ lục ).
+Ta sử dụng $\epsilon=10^{-5}$ cho VE SDEs và $\epsilon=10^{-3}$ cho VP SDEs (phụ lục \ref{C}).
 
 Ngoài các kết quả nôi suy trong hình \ref{fig:3}, ta trình bày thêm các mẫu về can thiệp trong không gian ẩn ở hình \ref{fig:6} bao gồm nội suy và chia tỷ lệ nhiệt độ.
 Mô hình được thử nghiệm là mô hình DDPM được huấn luyện với cùng cấu hình trong \citep{ho2020denoising}.
@@ -927,7 +927,7 @@ Hơn nữa, hiệu năng của bộ giải dòng xác suất phương trình ODE
 
 Để kiểm tra tính đúng đắn, ta huấn luyện hai mô hình (ký hiệu là "mô hình A" và "mô hình B") với các kiến trúc khác nhau sử dụng VE SDE trên tập CIFAR-10.
 Mô hình A là một mô hình NCSN++ với 4 lớp neuron trên từng độ phân giải được huấn luyện sử dụng hàm mục tiêu liên tục ở trong công thức \ref{eq:7} và mô hình B cũng giống hệt ngoại trừ sử dụng 8 lớp neuron trên từng độ phân giải.
-Các cấu hình về mô hình ở phụ lục .
+Các cấu hình về mô hình ở phụ lục \ref{H}.
 
 Ta báo cáo mã hóa ẩn thu được từ mô hình A và mô hình B cho các ảnh ngẫu nhiên trên tập CIFAR-10 trong hình \ref{fig:7}.
 Trong hình \ref{fig:8}, ta chỉ ra rằng sự khác biệt giữa từng chiều và hệ số tương quan giữa các mã hóa ẩn trên 16 ảnh của tập CIFAR-10.
@@ -967,7 +967,7 @@ với mô hình dựa trên điểm số đã được huấn luyện $\bold{x}_
 Khi áp dụng công thức \ref{eq:46} vào công thức \ref{eq:10} và công thức \ref{eq:20}, ta thu được một tập mới các bộ giải số cho phương trình VE và VP SDEs đảo ngược thời gian, kết quả tạo ra thuật toán lấy mẫu của phần "bộ dự đoán" ở trong thuật toán và thuật toán .
 Ta đặt tên các phương pháp lấy mẫu này là (dựa trên chiến lược rời rạc hóa ở công thức \ref{eq:46}) bộ lấy mẫu khuếch tán ngược.
 
-Như kỳ vọng, ancestral sampling của mô hình DDPM \citep{ho2020denoising} ở công thức \ref{eq:4} khớp với bộ khuếch tán ngược khi $\beta_i \rightarrow 0$ với mọi $i$ (điều này xảy ra khi $\Delta t \rightarrow 0$ khi $\beta_i = \bar{\beta}_i$ được trình bày ở phụ lục ), bởi vì:
+Như kỳ vọng, ancestral sampling của mô hình DDPM \citep{ho2020denoising} ở công thức \ref{eq:4} khớp với bộ khuếch tán ngược khi $\beta_i \rightarrow 0$ với mọi $i$ (điều này xảy ra khi $\Delta t \rightarrow 0$ khi $\beta_i = \bar{\beta}_i$ được trình bày ở phụ lục \ref{B}), bởi vì:
 
 \begin{equation*}
     \begin{aligned}
@@ -1053,7 +1053,7 @@ Ta gọi công thức \ref{eq:47} là phương pháp ancestral sampling cho mô 
 \textbf{Lấy mẫu dự đoán - hiệu chỉnh (PC)} Bộ dự đoán có thể là bất kỳ bộ giải số nào cho phương trình SDE đảo ngược thời gian với chiến lược rời rạc hóa cố định.
 Bộ hiệu chỉnh có thể là bất kỳ phương pháp MCMC nào dựa trên điểm số.
 Trong quá trình lấy mẫu sử dụng PC, ta luân phiên chạy giữa bộ dự đoán và bộ hiệu chỉnh được miêu tả trong thuật toán \ref{alg:1}.
-Ví dụ, khi sử dụng bộ giải phương trình SDE khuếch tán đảo ngược thời gian (phụ lục ) là bộ dự đoán, và tôi luyện động học Langevin \citep{song2019generative} là bộ hiệu chỉnh, ta có thuật toán \ref{alg:2} và thuật toán \ref{alg:3} cho VE và VP SDE tương ứng,
+Ví dụ, khi sử dụng bộ giải phương trình SDE khuếch tán đảo ngược thời gian (phụ lục \ref{E}) là bộ dự đoán, và tôi luyện động học Langevin \citep{song2019generative} là bộ hiệu chỉnh, ta có thuật toán \ref{alg:2} và thuật toán \ref{alg:3} cho VE và VP SDE tương ứng,
 với $\lbrace \epsilon_i \rbrace_{i=0}^{N-1}$ là độ dài bước cho động học Langevin được trình bày bên Dưới
 
 \begin{algorithm}[h!]
@@ -1167,7 +1167,7 @@ Trong tất cả các thử nghiệm của công trình này, ta đảm bảo c�
 Cho VE SDE, ta huấn luyện một moohinhf với hàm mục tiêu SMLD gốc trong công thức \ref{eq:1}, tương tự cho VP SDE,
 ta sử dụng hàm mục tiêu DDPM ban đầu trong công thức \ref{eq:3}.
 Ta áp dụng số ngưỡng nhiễu là 1000 ngưỡng nhiễu cho huấn luyện các mô hình.
-Kết quả ở trong hình \ref{fig:9}, ta huấn luyện mô hình NCSN++ (được trình bày ở phụ lục ) trên tạp LSUN 256 $\times$ 256 bedroom và LSUN 256 $\times$ 256 church \citep{yu2015lsun} với VESDE và hàm mục tiêu liên tục ở công thức \ref{eq:7}.
+Kết quả ở trong hình \ref{fig:9}, ta huấn luyện mô hình NCSN++ (được trình bày ở phụ lục \ref{H}) trên tạp LSUN 256 $\times$ 256 bedroom và LSUN 256 $\times$ 256 church \citep{yu2015lsun} với VESDE và hàm mục tiêu liên tục ở công thức \ref{eq:7}.
 Batch size được cố định là 128 trên tập CIFAR-10 và 64 trên tập LSUN.
 
 \textbf{Các phương pháp nội suy ad-hoc cho các ngưỡng nhiễu} Mô hình trong thử nghiệm ngày được huấn luyện với 1000 ngưỡng nhiễu.
@@ -1175,7 +1175,7 @@ Batch size được cố định là 128 trên tập CIFAR-10 và 64 trên tập
 ta cần nội suy giữa 1000 ngưỡng nhiễu tại thời điểm chạy suy luận.
 Kiến trúc cụ thể cho mô hình dựa trên điểm số điều kiện vào nhiễu trong \citep{ho2020denoising} sử dụng sinusoidal positional embeddings cho mô hình hóa điều kiện trên số bước là số nguyên.
 Điều này cho phép ta nội suy giữa các ngưỡng nhiễu trong lúc chạy suy luận theo cách ad-hoc (trong khi rất khó để làm như vậy cho các kiến trúc khác như kiến trúc trong \citep{song2019generative}).
-Cụ thheer, cho mô hình SMLD, ta giữ $\sigma_{\min}$ và $\sigma_{\max}$ cố định và tăng gấp đôi số bước thời gian.
+Cụ thể, cho mô hình SMLD, ta giữ $\sigma_{\min}$ và $\sigma_{\max}$ cố định và tăng gấp đôi số bước thời gian.
 Đối với mô hình DDPM, ta giảm một nửa $\beta_{\min}$ và $\beta_{\max}$ trong khi tăng ấp đôi số bước thời gian.
 Giả sử $\lbrace \bold{s}_{\boldsymbol{\theta}}(\bold{x}, i) \rbrace_{i=0}^{N-1}$ là một mô hình dựa trên điểm số được huấn luyện trên $N$ bước thời gian và đặt $\lbrace \bold{s}_{\boldsymbol{\theta}}(\bold{x}, i)^{\prime} \rbrace_{i=0}^{2N-1}$ ký hiệu là mô hình dựa trên điểm số được nội suy tương ứng tại $2N$ bước thời gian.
 Ta kiểm tra hai chiến lược nội suy cho các bước thời gian, nội suy tuyến tính với $\bold{s}_{\boldsymbol{\theta}}^{\ast} (\bold{x}, i)= \bold{s}_{\boldsymbol{\theta}}(\bold{x}, i/2)$ và nội suy làm tròn với $\bold{s}_{\boldsymbol{\theta}}^{\ast} (\bold{x}, i)= \bold{s}_{\boldsymbol{\theta}}(\bold{x}, \floor*{i/2})$.
@@ -1247,7 +1247,7 @@ Ta so sánh nhiều cấu hình khác nhau dựa trên điểm số FID trung b�
 
 Tất cả các điểm số FID được tính trên 50 nghìn mẫu với tensorflow\_gan.
 Đối với lấy mẫu, ta sử dụng bộ lấy mẫu PC rời rạc hóa tại 1000 bước thời gian.
-Ta chọn bộ lấy mẫu khuếch tán ngược (phụ lục ) làm bộ dự đoán.
+Ta chọn bộ lấy mẫu khuếch tán ngược (phụ lục \ref{E}) làm bộ dự đoán.
 Ta sử dụng một bước hiệu chỉnh cập nhật cho bộ dự đoán cho VE SDE với tỷ số signal-to-noise là 0.16,
 nhưng lưu lại bước hiệu chỉnh cho VP SDE cho bộ hiệu chỉnh chỉ giúp cho kết quả tốt hơn không nhiều nhưng yêu cầu tính toán gấp đôi.
 Ta theo \citep{ho2020denoising} cho tối ưu hóa, bao gồm tốc độ học, giới hạn gradient, và lịch trình tốc độ học.
@@ -1455,7 +1455,7 @@ Ma trận trực giao ta sử dụng để tách các kênh màu là:
     \end{pmatrix}
 \end{equation*}
 
-Bởi vì các phép biến đổi đều là các ma trận trực giao, quá trình Wiener chuẩn tắc $\bold{w}(t)$ vẫn là một quá trình Wiener chuẩn tắc trong không gian đã được biến đổi, cho phép chúng ta xây dựng một phương trình SDE và sử dụng phương pháp xóa ảnh tương tự như trong phụ lục .
+Bởi vì các phép biến đổi đều là các ma trận trực giao, quá trình Wiener chuẩn tắc $\bold{w}(t)$ vẫn là một quá trình Wiener chuẩn tắc trong không gian đã được biến đổi, cho phép chúng ta xây dựng một phương trình SDE và sử dụng phương pháp xóa ảnh tương tự như trong phụ lục \ref{I.2}.
 Ta cung các một tập các kết quả tô màu ở hình \ref{fig:16} và hình \ref{fig:17}
 
 \subsection{Giải các bài toán ngược tổng quát} \label{I.4}
