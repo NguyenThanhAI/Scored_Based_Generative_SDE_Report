@@ -884,7 +884,7 @@ và ta bỏ qua sự phụ thuộc vào $\Delta t$ vào ký hiệu của $\bold{
 Sử dụng công thức \ref{eq:17}, ta thu được dòng xác suất phương trình ODE:
 
 \begin{equation} \label{eq:42}
-    d \bold{x} = \Bigg \lbrack \bold{f}(\bold{x}, t) - \dfrac{1}{2} \bold{G}(t) \bold{G}(t)^T \nabla_{\bold{x} \log p_t (\bold{x})} \Bigg \rbrack dt
+    d \bold{x} = \Bigg \lbrack \bold{f}(\bold{x}, t) - \dfrac{1}{2} \bold{G}(t) \bold{G}(t)^T \nabla_{\bold{x}} \log p_t (\bold{x}) \Bigg \rbrack dt
 \end{equation}
 
 Ta có thể sử dụng một phương pháp số bất kỳ để tích hợp dòng xác suất phương trình ODE ngược theo thời gian cho việc sinh mẫu dữ liệu.
@@ -1366,7 +1366,7 @@ Vì vậy, sử dụng \citep{anderson1982reverse}, phương trình SDE đảo n
 Khi $p_t (\bold{x} \vert \bold{y}) \propto p_t(\bold{x}(t)) p(\bold{y} \vert \bold{x}(t))$, hàm điểm số $\nabla_{\bold{x}} \log p_t (\bold{x}(t) \vert \bold{y})$ có thể được tính dễ dàng bởi công thức:
 
 \begin{equation} \label{eq:49}
-    \nabla_{\bold{x}} \log p_t (\bold{x}(t) \vert \bold{y}) = \nabla_{\bold{x}} \log p_t(bold{x}(t)) + \nabla_{\bold{x}} \log p(\bold{y} \vert \bold{x}(t))
+    \nabla_{\bold{x}} \log p_t (\bold{x}(t) \vert \bold{y}) = \nabla_{\bold{x}} \log p_t(\bold{x}(t)) + \nabla_{\bold{x}} \log p(\bold{y} \vert \bold{x}(t))
 \end{equation}
 
 Thành phần này đóng góp vào phương trình SDE đảo ngược thời gian ở công thức \ref{eq:14} như một trường hợp đặc biệt.
