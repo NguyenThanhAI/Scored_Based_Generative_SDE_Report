@@ -525,7 +525,7 @@ với các mẫu độ phân giải 1024 $\times$ 1024 trên tập CelebA-HQ.
 Cuối cùng, ta trình bày chi tiết về các thuật toán sinh mẫu có điều khiển trong phụ lục  và bao gồm các kết quả mở rộng cho sinh dữ liệu dựa trên lớp (phụ lục ),
 bài toán tô màu (phụ lục ) và chiến lực cho giải bài toán ngược tổng quát (phụ lục ).
 
-\section{Khung làm việc cho phương trình SDE tổng quát}
+\section{Khung làm việc cho phương trình SDE tổng quát} \label{A}
 
 Trong phần nội dung chính, ta đã giới thiệu khung làm việc dựa trên phương trình SDE ở công thức \ref{eq:5} với hệ số khuếch tán độc với $\bold{x}(t)$.
 Cho thấy rằng khung làm việc của ta có thể mở rộng với những tham số khuếch tán tổng quát hơn.
@@ -574,7 +574,7 @@ Ví dụ, khi sử dụng hàm khớp điểm số theo lát \citep{song2020slic
 với $\lambda: \lbrack 0, T \rbrack \rightarrow \mathbb{R}^{+}$ là một hàm trọng số dương, $t \sim \mathcal{U}(0, T), \mathbb{E} \lbrack \bold{v} \rbrack = \bold{0}$
 Ta có thể luôn luôn mô phỏng SDE để lấy mẫu từ $p_{0t}(\bold{x}(t) \vert \bold{x}(0))$, và giải phương trình ở công thức \ref{eq:19} để huấn luyện mô hình dựa trên điểm số phụ thuộc vào thời gian $\bold{x}_{\bold{theta}}(\bold{x}, t)$.
 
-\section{VE, VP và sub-VP SDEs}
+\section{VE, VP và sub-VP SDEs} \label{B}
 
 Tiếp theo ta cung cấp các dẫn xuất công thức để chỉ ra dùng nhiễu xáo trộn của các mô hình SMLD và DDPM là phiên bản rời rạc hóa của Variance Exploding (VE) và Variance Preserving (VP) SDE tương ứng.
 Ta cũng giới thiệu thêm sub-VP SDEs, một phiên bản sửa đổi của VP SDEs thường thu được kết quả tốt hơn ở cả chất lượng mẫu và độ hợp lý.
@@ -692,7 +692,7 @@ Vì vậy, nhân làm xáo trộn $p_{0t}(\bold{x}(t) \vert \bold{x}(0))$ tất 
 
 Như vậy kết quả là tất cả các phương trình SDE được giới thiệu ở đây đều có thể được huấn luyện một cách hiệu quả với hàm mục tiêu ở công thức \ref{eq:7}
 
-\section{Các phương trình SDEs}
+\section{Các phương trình SDEs} \label{C}
 
 Dưới đây ta sẽ thảo luận về khởi tạo của VE và VP SDE mà rời rạc hóa mang lại các mô hình SMLD và DDPM, và sub-VP SDE cụ thể được sử dụng trong thử nghiệm của ta.
 Trong SMLD, các ngưỡng nhiễu $\lbrace \sigma_i \rbrace_{i=1}^N$ thường là một dãy hình học với $\sigma_{\min}$ được cố định là 0.01 và $\sigma_{\max}$ được chọn theo kỹ thuật 1 trong \citep{song2020improved}.
@@ -762,9 +762,9 @@ Về mặt thực nghiệm, ta quan sát một số $\epsilon$ nhỏ hơn về m
 Khi lấy mẫu, rất quan trọng khi sử dụng một số $\epsilon$ hợp lý để cho kết quả Inception và FID tốt hơn mặc dù đối với nhiều giá trị $\epsilon$ khác nhau các mẫu nhìn rất tương đương đối với mắt người. 
 
 
-\section{Dòng xác suất phương trình ODE}
+\section{Dòng xác suất phương trình ODE} \label{D}
 
-\subsection{Diễn giải công thức}
+\subsection{Diễn giải công thức} \label{D.1}
 
 Ý tưởng của dòng xác suất phương trình ODE được lấy cảm hứng bởi \citep{maoutsa2020interacting} và ta có thể tìm thấy một vài trường hợp đơn giản hóa trong công trình này.
 Tiếp theo ta sẽ cung cấp diễn giải công thức cho phương trình ODE tổng quát ở công thức \ref{eq:17}.
@@ -832,7 +832,7 @@ về cơ bản là một phương trình ODE:
 có cùng dòng xác suất ODE được cho bởi công thức \ref{eq:17}.
 Vì vậy, ta đã chỉ ra rằng dòng xác suất ODE ở công thức \ref{eq:17} dẫn đến cùng hàm mật độ xác suất cận biên $p_t(\bold{x})$ với phương trình SDE ở công thức \ref{eq:15}.
 
-\subsection{Tính toán độ hợp lý}
+\subsection{Tính toán độ hợp lý} \label{D.2}
 
 Dòng xác suất của phương trình ODE trong công thức \ref{eq:17} có dạng sau khi ta thế điểm số $\nabla_{\bold{x}} \log p_t (\bold{x})$ với mô hình dựa trên điểm số phụ thuộc vào thời gian $\bold{s}_{\bold{\theta}}(\bold{x}, t)$:
 
@@ -1011,7 +1011,7 @@ Vì vậy, bộ lấy mẫu ancestral sampling ban đầu của công thức \re
     \label{fig:8}
 \end{figure}
 
-\section{Ancestral Sampling cho mô hình SMLD}
+\section{Ancestral Sampling cho mô hình SMLD} \label{F}
 
 Phương pháp ancestral sampling cho mô hình DDPM có thể được áp dụng cho mô hình SMLD.
 Ta sét một dãy các ngưỡng nhiễu $\sigma_1 < \sigma_2 < \dots < \sigma_N$ trong SMLD.
@@ -1048,7 +1048,7 @@ Vì vậy ta có thể tham số hóa $\boldsymbol{\mu}_{\boldsymbol{\theta}}(\b
 với $\bold{x}_N \sim \mathcal{N}(\bold{0}, \sigma_N^2 \bold{I}), \bold{\theta}^{\ast}$ ký hiệu tham số tối ưu của $\bold{s}_{\boldsymbol{\theta}}$ và $\bold{z}_i \sim \mathcal{N}(\bold{0}, \bold{I})$.
 Ta gọi công thức \ref{eq:47} là phương pháp ancestral sampling cho mô hình SMLD.
 
-\subsection{Bộ lấy mẫu dự đoán - hiệu chỉnh} \label{G}
+\section{Bộ lấy mẫu dự đoán - hiệu chỉnh} \label{G}
 
 \textbf{Lấy mẫu dự đoán - hiệu chỉnh (PC)} Bộ dự đoán có thể là bất kỳ bộ giải số nào cho phương trình SDE đảo ngược thời gian với chiến lược rời rạc hóa cố định.
 Bộ hiệu chỉnh có thể là bất kỳ phương pháp MCMC nào dựa trên điểm số.
@@ -1284,7 +1284,7 @@ Tham số của Exponential moving average (EMA) ảnh hưởng lớn đến hi�
 Mô hình được huấn luyện với xáo trộn VE, ta thấy 0.999 tốt hơn 0.9999, với mô hình được huấn luyện với xáo trộn VP thì ngược lại.
 Vì vậy ta sử dụng tham số EMA là 0.999 và 0.9999 tương ứng cho VE và VP.
 
-\subsection{Kết quả trên tập CIFAR-10}
+\subsection{Kết quả trên tập CIFAR-10} \label{H.2}
 
 Tất cả các thành phần kiến trúc đã được giới thiệu ở treen có thể cải thiện hiệu năng của mô hình dựa trên điểm số được huấn luyện với VE SDE, được minh họa ở hình \ref{fig:10}.
 Box plot thể hiện sự quan trọng của từng thành phần khi khi thành phần khác biến đổi tự do.
@@ -1393,7 +1393,7 @@ Các mẫu có điều kiện trên lớp được cung cấp ở hình \ref{fig
     \label{fig:13}
 \end{figure}
 
-\subsection{Xóa môt phần ảnh}
+\subsection{Xóa môt phần ảnh} \label{I.2}
 
 Xóa một phần ảnh là một trường hợp đặc biệt của lấy mẫu có điều kiện.
 Ký hiệu $\Omega(\bold{x})$ và $\bar{\Omega}(\bold{x})$ là số chiều được biết hoặc không biết của $\bold{x}$,
@@ -1441,7 +1441,7 @@ với $[\bold{z}(t); \hat{\Omega}(\bold{x}(t))]$ ký hiệu một vector $\bold{
 
 Ta biểu diễn một số kết quả inpainting ở hình \ref{fig:14} và hình \ref{eq:15}.
 
-\subsection{Bài toán tô màu}
+\subsection{Bài toán tô màu} \label{I.3}
 
 Bài toán tô màu là trường hợp đặc biệt của xóa một phần ảnh, ngoại trừ việc biết trước chiều dữ liệu.
 Ta có thể tách chiều dữ liệu sử dụng một phép biến đổi tuyến tính trực giao hóa để ánh xạ ảnh xám thành các kênh riêng biệt trong một không gian khác, sau đó thực hiện xóa một ảnh ảnh để hoàn thành các kênh khác trước khi biến đổi mọi thứ về không gian ảnh ban đầu.
@@ -1458,7 +1458,7 @@ Ma trận trực giao ta sử dụng để tách các kênh màu là:
 Bởi vì các phép biến đổi đều là các ma trận trực giao, quá trình Wiener chuẩn tắc $\bold{w}(t)$ vẫn là một quá trình Wiener chuẩn tắc trong không gian đã được biến đổi, cho phép chúng ta xây dựng một phương trình SDE và sử dụng phương pháp xóa ảnh tương tự như trong phụ lục .
 Ta cung các một tập các kết quả tô màu ở hình \ref{fig:16} và hình \ref{fig:17}
 
-\subsection{Giải các bài toán ngược tổng quát}
+\subsection{Giải các bài toán ngược tổng quát} \label{I.4}
 
 Giả sử ta có hai biến ngẫu nhiên $\bold{x}$ và $\bold{y}$ và ta biết quá trình thuận của sinh ra $\bold{y}$ từ $\bold{x}$ được cho bởi $p(\bold{y} \vert \bold{x})$.
 Bài toán ngược là thu được $\bold{x}$ từ $\bold{y}$ và sinh ra các mẫu từ phân phối $p(\bold{x} \vert \bold{y})$.
