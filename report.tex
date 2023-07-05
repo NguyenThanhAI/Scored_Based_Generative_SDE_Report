@@ -66,9 +66,9 @@ Trường Đại học Khoa học Tự nhiên\\
     Kết hợp với nhiều bước tiến về các kiến trúc mô hình, ta đã đạt kỷ lục với việc sinh ảnh trên tập CIFAR-10 với điểm Inception score là 9.89 và FID là 2.20 và độ hợp lý rất tốt 2.99 bits/dim, và thể hiện khả năng sinh ảnh chân thực với ảnh có độ phân giải 1024 $\times$ 1024 lần đầu tiên từ một mô hình sinh dựa trên điểm số.
 \end{abstract}
 
-\section{GIỚI THIỆU}
+\section{GIỚI THIỆU} \label{1}
 
-Hai lớp thành công của các mô hình sinh xác suất liên quan đến việc làm biến đổi dữ liệu một cách tuần tự với độ nhiễu tăng dần, sau đó học cách đảo ngược sự biến đổi để tạ thành một mô hình sinh của dữ liệu.
+Hai lớp thành công của các mô hình sinh xác suất liên quan đến việc làm biến đổi dữ liệu một cách tuần tự với độ nhiễu tăng dần, sau đó học cách đảo ngược sự biến đổi để tạo thành một mô hình sinh của dữ liệu.
 \textit{Score matching with Langevin dynamics} (SMLD) \citep{song2019generative} ước lượng điểm số (ví dụ gradient của log của hàm mật độ xác suất của dữ liệu) tại từng mức nhiễu, sau đó sử dụng động học Langevin để lấy mẫu từ mỗi dãy các mức nhiễu giảm dần trong suốt quá trình sinh dữ liệu.
 \textit{Denoising diffusion probabilistic modeling} (DDPM) \citep{sohl2015deep,ho2020denoising} huấn luyện một dãy các mô hình xác suất để đảo ngược từng bước của quá trình bị xáo trộn bởi nhiễu,
 sử dụng những kiến thức về dạng chức năng của các phân phối ngược làm cho quá trình huấn luyện dễ dàng hơn.
@@ -98,7 +98,7 @@ Khung làm việc đề xuất có nhiều đóng góp về mặt lý thuyết v
 
 \textbf{Lấy mẫu linh hoạt và tính toán độ hợp lý:} Ta có thể sử dụng bất kỳ một bộ giải phương trình SDE đa chức năng nào để tích hợp phương trình SDE đảo ngược thời gian cho bài toán lấy mẫu.
 Hơn nữa, ta đề xuất hai phương pháp đặc biệt mà không phù hợp với phương trình SDE nói chung: (i) Bộ lấy mẫu Dự đoán - Căn chỉnh (PC) kết hợp với bộ giải SDE bằng phương pháp số và cách tiếp cận MCMC (Markov Chain Monte Carlo) dựa trên điểm số, như Langevin MCMC \citep{parisi1981correlation} và HMC \citep{neal2011mcmc} và (ii) các bộ lấy mẫu tất định dựa trên dòng xác suất của các phương trình vi phân thường (ODE).
-Phương pháp thứ nhất hợp nhất vả cải thiện các phương pháp lấy mẫu hiện có cho các mô hình dựa trên điểm số.
+Phương pháp thứ nhất hợp nhất và cải thiện các phương pháp lấy mẫu hiện có cho các mô hình dựa trên điểm số.
 Phương pháp thứ hai cho phép lấy mẫu thích ứng nhanh thông qua một hộp đen là một bộ giải phương trình ODE, các thao tác trên dữ liệu linh hoạt thông qua mã ẩn, mỗi mã có tính duy nhất và điều đáng chú ý ta có thể tính chính xác độ hợp lý.
 
 \textbf{Sinh dữ liệu có điều kiện:} Ta có thể điều chỉnh quá trình sinh dữ liệu bằng cách điều chỉnh các thông tin không có sẵn trong quá trình huấn luyện, bởi vì phương trình SDE đảo ngược thời gian có điều kiện có thể được ước lượng hiệu quả từ các điểm số \textit{không có điều kiện}.
@@ -109,9 +109,9 @@ Các phương pháp của SMLD và DDPM có thể được đưa vào khung làm
 Mặc dù DDPM \citep{ho2020denoising} gần đây đã được báo cáo là có thể đạt được mẫu có chất lượng cao hơn SMLD \citep{song2019generative,song2020improved}, ta chỉ ra điều đó với kiến trúc mạng tốt hơn và các thuật toán lấy mẫu mới cho phép bởi khung làm việc của ta, mô hình sau đó có thể bắt kịp và đạt được đến điểm Inception kỷ lục (9.89) và FID (2.20) trên tập CIFAR-10 cũng như độ chân thực của ảnh có độ phân giải 1024 $\times$ 1024 lần đầu tiên từ một mô hình sinh dựa trên điểm.
 Ngoài ra, ta đề xuất một phương trình SDE mới trong khung làm việc của ta thu được độ hợp lý có giá trị 2.99 bits/dim trên tập CIFAR-10, tạo nên một kỷ lục mới cho bài toán này.
 
-\section{Kiến thức nền tảng}
+\section{Kiến thức nền tảng} \label{2}
 
-\subsection{Khử nhiều khớp điểm số với động học Langevin (SMLD)}
+\subsection{Khử nhiễu khớp điểm số với động học Langevin (SMLD)} \label{2.1}
 
 Đặt $p_{\sigma}(\tilde{\bold{x}} \vert \bold{x}) \vcentcolon = \mathcal{N}(\tilde{\bold{x}};\bold{x}, \sigma^2 \bold{I})$ là một nhân tạo ra nhiễu, và $p_{\sigma}(\tilde{\bold{x}})\vcentcolon = \int p_{\mathrm{data}}(\bold{x}) p_{\sigma}(\tilde{\bold{x}} \vert \bold{x}) d \bold{x}$, với $p_{\mathrm{data}}$ ký hiệu là phân phối dữ liệu.
 Ta xét một dãy các mức nhiễu dương $\sigma_{\min} < \sigma_2 < \dots < \sigma_N = \sigma_{\max}$.
@@ -133,7 +133,7 @@ với $\epsilon_i > 0$ là độ dài bước và $\bold{z}_i^m$ là một biế
 Công thức trên được lặp lại cho $i=N, N-1, \dots, 1$ với $\bold{x}_N^0 \sim \mathcal{N}(\bold{x} \vert \bold{0}, \sigma_{\max}^2 \bold{I})$ và $\bold{x}_i^0 = \bold{x}_{i+1}^M$ khi $i < N$. Khi $M \rightarrow \infty$ và $\epsilon_i \rightarrow 0$ với mọi $i, \bold{x}_1^M$ trở thành một mẫu chính xác từ $p_{\sigma_{\min}}(\bold{x})\approx p_{\mathrm{data}}(\bold{x})$ trong một số điều kiện.
 
 
-\subsection{Mô hình xác suất khuếch tán khử nhiễu (DDPM)}
+\subsection{Mô hình xác suất khuếch tán khử nhiễu (DDPM)} \label{2.2}
 
 \citep{sohl2015deep,ho2020denoising} xét một dãy các ngưỡng nhiễu dương $0 < \beta_1, \beta_2, \dots, \beta_N < 1$.
 Với từng điểm dữ liệu huấn luyện $\bold{x}_0 \sim p_{\mathrm{data}}(\bold{x})$, một xích Markov rời rạc $\lbrace \bold{x}_1, \bold{x}_2, \dots, \bold{x}_N \rbrace$ được tạo ra sao cho $p(\bold{x}_i \vert \bold{x}_{i-1}) = \mathcal{N}(\bold{x}_i; \sqrt{1-\beta_i} \bold{x}_{i-1}, \beta_i \bold{I})$ và vì vậy $p_{\alpha_i}=\mathcal{N}(\bold{x}_i; \sqrt{\alpha_i}\bold{x}_0, (1-\alpha_i)\bold{I})$,
@@ -143,7 +143,7 @@ Các mức nhiễu được chọn sao cho $\bold{x}_N$ có phân phối xấp x
 Một xích Markov biến phân theo chiều ngược được tham số hóa với $p_{\boldsymbol{\theta}} (\bold{x}_{i-1} \vert \bold{x}_i)=\mathcal{N}\Big(\bold{x}_{i-1}; \dfrac{1}{\sqrt{1-\beta_i}}(\bold{x}_i + \beta_i \bold{s}_{\boldsymbol{\theta}}(\bold{x}_i, i)), \beta_i \bold{I}\Big)$ và được huấn luyện với một biến thể được đánh lại trọng số của cận dưới của độ hợp lý (ELBO):
 
 \begin{equation} \label{eq:3}
-    \boldsymbol{\theta}^{\ast} = \argmin_{\boldsymbol{\theta}} \sum_{i=1}^N (1 - \alpha_i) \mathbb{E}_{p_{\mathrm{data}}(\bold{x})} \mathbb{E}_{p_{\alpha_i (\tilde{\bold{x}} vert \bold{x})}} \big \lbrack \lVert \bold{s}_{\boldsymbol{\theta}} (\tilde{\bold{x}}, i) - \nabla_{\tilde{\bold{x}}} \log p_{\alpha_i} (\tilde{\bold{x}} \vert \bold{x}) \rVert_2^2 \big \rbrack
+    \boldsymbol{\theta}^{\ast} = \argmin_{\boldsymbol{\theta}} \sum_{i=1}^N (1 - \alpha_i) \mathbb{E}_{p_{\mathrm{data}}(\bold{x})} \mathbb{E}_{p_{\alpha_i (\tilde{\bold{x}} \vert \bold{x})}} \big \lbrack \lVert \bold{s}_{\boldsymbol{\theta}} (\tilde{\bold{x}}, i) - \nabla_{\tilde{\bold{x}}} \log p_{\alpha_i} (\tilde{\bold{x}} \vert \bold{x}) \rVert_2^2 \big \rbrack
 \end{equation}
 
 Sau khi giải phương trình \ref{eq:3} để thu được mô hình tối ưu $\bold{s}_{\boldsymbol{\theta}^{\ast}}(\bold{x}, i)$, các mẫu có thể được tạo ra bằng cách bắt đầu từ một nhiễu tuân theo phân phối chuẩn tắc $\bold{x}_N \sim \mathcal{N}(\bold{0}, \bold{I})$ và sử dụng công thức ước lượng xích Markov ngược sau đây:
@@ -170,12 +170,12 @@ Tổng quát của khung làm việc của ta được miêu tả trong hình \r
     \includegraphics[width=\textwidth]{2.png}
     \caption{\textbf{Tổng quan của một mô hình sinh dựa trên điểm số với phương trình SDE}
     Ta có thể ánh xạ dữ liệu thành một phân phối nhiễu (phân phối tiên nghiệm) với một phương trình SDE (mục \ref{Pertubring-data-with-SDE}) và đảo ngược phương trình SDE này cho quá trình sinh dữ liệu (mục ).
-    Ta cũng có thể đảo ngược dòng xác suất tương ứng phương trình ODE (mục ) thu được một quá trình tất định lấy mẫu từ cùng phân phối với SDE.
+    Ta cũng có thể đảo ngược dòng xác suất tương ứng phương trình ODE (mục \ref{4.3}) thu được một quá trình tất định lấy mẫu từ cùng phân phối với SDE.
     Cả phương trình SDE đảo ngược thời gian và dòng xác suất phương trình ODE có thể đạt được bằng các ước lượng điểm số $\nabla_{\bold{x}} \log p_t (\bold{x})$ (mục \ref{Estimating-Scores-For-The-SDE}).}
     \label{fig:2}
 \end{figure}
 
-\subsection{Làm xáo trộn dữ liệu với phương trình SDE} \label{Pertubring-data-with-SDE}
+\subsection{Làm xáo trộn dữ liệu với phương trình SDE} \label{Pertubring-data-with-SDE} \label{2.3}
 
 Mục đích của ta là xây dựng một quá trình khuếch tán $\lbrace \bold{x}(t) \rbrace_{t=0}^T$ được đánh chỉ số bởi một biến thời gian liên tục $t \in \lbrack 0, T \rbrack$ ví dụ $\bold{x}(0) \sim p_0$, giả sử nếu ta có một bộ dữ liệu mà các điểm dữ liệu là độc lập và cùng phân phối, và $\bold{x}(T) \sim p_T$ là một dạng rất dễ xử lý để sinh các mẫu dữ liệu hiệu quả.
 Hay nói cách khác, $p_0$ là phân phối dữ liệu và $p_T$ là phân phối tiên nghiệm.
@@ -185,10 +185,10 @@ Quá trình khuếch tán có thể được mô hình hóa là nghiệm của p
     d \bold{x} = \bold{f} (\bold{x}, t) dt + g(t) d \bold{w}
 \end{equation}
 
-với $\tilde{\bold{w}}$ là một quá trình Wiener chuẩn tắc (hay còn được gọi là chuyển động Brown), $\bold{f}(.,t): \mathbb{R}^d \rightarrow \mathbb{R}^d$ là một hàm vector được gọi là hệ số độ trôi của $\bold{x}(t)$ và $g(.): \mathbb{R} \rightarrow \mathbb{R}$ là một hàm vô hướng được gọi là hệ số khuếch tán của $\bold{x}(t)$.
+với $\bold{w}$ là một quá trình Wiener chuẩn tắc (hay còn được gọi là chuyển động Brown), $\bold{f}(.,t): \mathbb{R}^d \rightarrow \mathbb{R}^d$ là một hàm vector được gọi là hệ số độ trôi của $\bold{x}(t)$ và $g(.): \mathbb{R} \rightarrow \mathbb{R}$ là một hàm vô hướng được gọi là hệ số khuếch tán của $\bold{x}(t)$.
 Để cho thuận tiện cho việc trình bày ta giả sử hệ số khuếch tán là một số vô hướng (thay vì là một ma trận $d \times d$) và không phụ thuộc vào $\bold{x}$, nhưng lý thuyết của ta có thể được tổng quát hóa và vẫn đúng trong trường hợp này (phụ lục \ref{A}).
 Phương trình SDE có một nghiệm riêng mạnh chừng nào các hệ số vẫn là Lipschitz toàn cục trong cả trạng thái và thời gian \citep{oksendal2003stochastic}.
-Từ sau đây ta ký hiệu $p_t (\bold{x})$ là hàm mật độ xác suất của $\bold{x}(t)$ và sử dụng $p_{st}(\bold{x}(t) \vert \bold{x}(s))$ để ký hiệu nhân chuyển tiếp từ $\bold{x}(s)$ sang $\bold{x}(t)$, với $0 \leq s < s \leq T$.
+Từ sau đây ta ký hiệu $p_t (\bold{x})$ là hàm mật độ xác suất của $\bold{x}(t)$ và sử dụng $p_{st}(\bold{x}(t) \vert \bold{x}(s))$ để ký hiệu nhân chuyển tiếp từ $\bold{x}(s)$ sang $\bold{x}(t)$, với $0 \leq s < t \leq T$.
 
 Thông thường, $p_T$ là một phân phối phi cấu trúc không bao gồm thông tin nào của $p_0$, ví dụ như phân phối Gaussian với trung bình và phương sai cố định.
 Có nhiều cách để thiết kế SDE trong phương trình \ref{eq:5} trong quá trình khuếch tán phân phối dữ liệu thành một phân phối tiên nghiệm cố định.
@@ -211,7 +211,7 @@ Một khi điểm số của phân phối cận biên $\nabla_{\bold{x}} p_t(\bo
 Điểm số của một phân phối có thể được ước lượng bằng cách huấn luyện một mô hình dựa trên điểm số trên các mẫu với khớp điểm số \citep{hyvarinen2005estimation,song2020sliced}. Để ước lượng $\nabla_{\bold{x}} \log p_t(\bold{x})$, ta có thể huấn luyện một mô hình dựa trên điểm số phụ thuộc vào thời gian $\bold{s}_{\boldsymbol{\theta}}(\bold{x}, t)$ thông qua một tổng quát hóa liên tục từ phương trình \ref{eq:1} và phương trình \ref{eq:3}:
 
 \begin{equation} \label{eq:7}
-    \boldsymbol{\theta}^{\ast} = \argmin_{\boldsymbol{\theta}} \mathbb{E}_t \Big \lbrace  \lambda(t) \mathbb{E}_{\bold{x}(0)} \mathbb{E}_{\bold{x}(t) \bold{x}(0)} \big \lbrack \lVert \bold{s}_{\boldsymbol{\theta}} (\bold{x}(t), t) - \nabla_{\bold{x}(t)} \log p_{0t} (\bold{x}(t) \vert \bold{x}(0)) \rVert_2^2 \big \lbrack \Big \rbrace
+    \boldsymbol{\theta}^{\ast} = \argmin_{\boldsymbol{\theta}} \mathbb{E}_t \Big \lbrace  \lambda(t) \mathbb{E}_{\bold{x}(0)} \mathbb{E}_{\bold{x}(t) \vert \bold{x}(0)} \big \lbrack \lVert \bold{s}_{\boldsymbol{\theta}} (\bold{x}(t), t) - \nabla_{\bold{x}(t)} \log p_{0t} (\bold{x}(t) \vert \bold{x}(0)) \rVert_2^2 \big \lbrack \Big \rbrace
 \end{equation}
 
 với $\lambda: \lbrace 0, T \rbrace \rightarrow \mathbb{R}_{>0}$ là một hàm trọng số dương,
@@ -221,14 +221,14 @@ Trong SMLD và DDPM, ta thường chọn $\lambda \propto 1 / \mathbb{E} \big \l
 Ta cần chú ý rằng công thức \ref{eq:7} sử dụng khớp điểm số khử nhiễu nhưng các hàm mục tiêu khớp điểm số khác ví dụ như khớp điểm số theo lát \citep{song2020sliced} và khớp điểm số sai phân hữu hạn \citep{pang2020efficient} cũng có thể được áp dụng ở đây.
 
 Ta thường cũng cần phải biết nhân chuyển tiếp $p_{0t} (\bold{x}(t) \vert \bold{x}(0))$ để giải phương trình \ref{eq:7} một cách hiệu quả.
-Nếu $\bold{f}(.,t)$ là hàm affine, nhân chuyển tiếp luôn luôn là phân phối Gaussian mà trung bình và phương sai thường được biết trong dạng đóng và có thể thu được bằng các kỹ thuật chuẩn tắc (xem mục 5.5  trong \cite{sarkka2019applied}).
+Nếu $\bold{f}(.,t)$ là hàm affine, nhân chuyển tiếp luôn luôn là phân phối Gaussian mà trung bình và phương sai thường được biết trong dạng đóng và có thể thu được bằng các kỹ thuật chuẩn tắc (xem mục 5.5  trong \citep{sarkka2019applied}).
 Với phương trình SDE tổng quát hơn, ta có thể giải phương trình Kolmogorov thuận \citep{oksendal2003stochastic} để thu được $p_{0t} (\bold{x}(t) \vert \bold{x}(0))$.
 Một cách khác, ta có thể mô phỏng phương trình SDE để lấy mẫu từ $p_{0t}(\bold{x}(t) \vert \bold{x}(0))$ và thay thế thành phần khớp điểm số khử nhiễu trong \ref{eq:7} với khớp điểm số theo lát để huấn luyện mô hình mà bỏ qua việc tính toán $\nabla_{\bold{x}(t)} \log p_{0t} (\bold{x}(t) \vert \bold{x}(0))$ (xem phụ lục \ref{A}).
 
 \subsection{Một số ví dụ: VE, VP SDE và các SDE khác}
 
 Nhiễu được dùng để làm xáo trộn dữ liệu trong SMLD và DDPM có thể được xem là phiên bản rời rạc hóa của hai phương trình SDE khác nhau.
-Ta sẽ nói ngắn gọn về phần này và chi tiết dudocj trình bày ở phụ lục \ref{B}.
+Ta sẽ nói ngắn gọn về phần này và chi tiết được trình bày ở phụ lục \ref{B}.
 
 Khi ta sử dụng $N$ mức nhiễu, từng nhân xáo trộn dữ liệu $p_{\sigma_i}(\bold{x} \vert \bold{x}_0)$ của SMLD tương ứng với phân phối của $\bold{x}_i$ theo xích Markov sau:
 
@@ -274,7 +274,7 @@ Khi VE, VP, sub-VP SE đều có một độ trôi, nhân làm xáo trộn dữ 
 
 \section{Giải phương trình SDE ngược}
 
-Sau khi huấn luyện một mô hình dựa trên điểm số phụ thuộc vào thời gian $\bold{s}_{\boldsymbol{\theta}}$, ta có thể sử dụng mô hình này để xây dựng một phương trình SDE đảo ngược thời gian và sau đó mô phỏng nó với cách tiếp cận phuowg pháp số để sinh ra các mẫu dữ liệu từ phân phối $p_0$.
+Sau khi huấn luyện một mô hình dựa trên điểm số phụ thuộc vào thời gian $\bold{s}_{\boldsymbol{\theta}}$, ta có thể sử dụng mô hình này để xây dựng một phương trình SDE đảo ngược thời gian và sau đó mô phỏng nó với cách tiếp cận phương pháp số để sinh ra các mẫu dữ liệu từ phân phối $p_0$.
 
 \subsection{Bộ giải phương trình SDE bằng phương pháp số đa chức năng}
 
@@ -322,22 +322,22 @@ Sau đó, ta dùng MCMC dựa trên điểm số căn chỉnh phân phối cận
 Mã giả được được trình bày ở phụ lục \ref{G}.
 Bộ lấy mẫu PC tổng quát hóa các phương pháp lấy mẫu ban đầu của SMLD và DDPM: các phương pháp trước đây sử dụng một hàm đồng nhất là hàm dự đoán và tôi luyện động học Langevin làm bộ căn chỉnh, trong khi các phương pháp sau sử dụng ancestral sampling là bộ dự đoán và hàm đồng nhất là bộ căn chỉnh.
 
-Ta sẽ thử bộ lấy mẫu PC trên các mô hình SMLD và DDPM (thuật toán và thuật toán trong phụ lục) được huấn luyện với hàm mục tiêu rời rạc ban đầu trong các công thức \ref{eq:1} và \ref{eq:3}.
+Ta sẽ thử bộ lấy mẫu PC trên các mô hình SMLD và DDPM (thuật toán \ref{alg:2} và thuật toán \ref{alg:3} trong phụ lục \ref{G}) được huấn luyện với hàm mục tiêu rời rạc ban đầu trong các công thức \ref{eq:1} và \ref{eq:3}.
 Các công thức này cho ta thấy sự phù hợp của bộ lấy mẫu PC với mô hình dựa trên điểm số được huấn luyện với một số bước cố định các mức nhiễu.
 Ta tổng hợp khả năng của các bộ lấy mẫu khác nhau trong bảng \ref{tab:1}, với dòng xác suất là một bộ dự đoán sẽ được trình bày ở trong mục \ref{Probability-Flow-and-Connection-to-Neural-ODEs}.
-Cấu hình chi tiết về các thí nghiệm và các kết quả chi tiết hơn được trình phù ở phụ lục.
+Cấu hình chi tiết về các thí nghiệm và các kết quả chi tiết hơn được trình bày ở phụ lục \ref{G}.
 Ta quan sát thấy rằng bộ lấy mẫu khuếch tán ngược luôn luôn tốt hơn so với các phương pháp ancestral sampling, chỉ căn chỉnh (C2000) và kém hơn so với các bộ lấy mẫu khác (PC2000, PC1000) cùng với lượng tính toán.
-(Thực tế, ta cần nhiều bước căn chỉnh hơn trên một mức nhiễu, và vì vậy cần tính toán nhiều hơn để khớp với khả năng của các bộ lấy mẫu khác)
+(Thực tế, ta cần nhiều bước căn chỉnh hơn trên một mức nhiễu, và vì vậy cần tính toán nhiều hơn để khớp với khả năng của các bộ lấy mẫu khác).
 Với tất cả các bộ dự đoán, thêm một bước căn chỉnh cho từng bước dựa đoán (PC1000) làm tăng khối lượng tính toán lên gấp đôi nhưng luôn luôn cải thiện chất lượng mẫu (so với PC1000).
 Hơn nữa, thông thường việc thêm một bước dự đoán và căn chỉnh thường tốt hơn tăng gấp đôi số bước dự đoán mà không thêm bước căn chỉnh (P2000),
-khi ta luôn phải nội suy giữa những mức nhiễu (chi tiết trong phụ lục) cho các mô hình SMLD/DDPM.
-Trong hình (phụ lục), ta cung cấp thêm so sánh về mặt chất các mô hình cho các hàm mục tiêu trong công thức \ref{eq:7} trên tập LSUN 256 $\times$ 256 và VE SDE, với các bộ lấy mẫu PC vượt trội hơn hẳn các bộ lấy mẫu chỉ dự đoán với cùng một khối lượng tính toán khi ta dùng một số lượng phù hợp các bước căn chỉnh.
+khi ta luôn phải nội suy giữa những mức nhiễu (chi tiết trong phụ lục \ref{G}) cho các mô hình SMLD/DDPM.
+Trong hình \ref{fig:9} (phụ lục \ref{G}), ta cung cấp thêm so sánh về mặt chất các mô hình cho các hàm mục tiêu trong công thức \ref{eq:7} trên tập LSUN 256 $\times$ 256 và VE SDE, với các bộ lấy mẫu PC vượt trội hơn hẳn các bộ lấy mẫu chỉ dự đoán với cùng một khối lượng tính toán khi ta dùng một số lượng phù hợp các bước căn chỉnh.
 
-\subsection{Dòng xác suất và sự liên kết với các phương trình ODE neuron} \label{Probability-Flow-and-Connection-to-Neural-ODEs}
+\subsection{Dòng xác suất và sự liên kết với các phương trình ODE neuron} \label{4.3}
 
 Các mô hình dựa trên điểm số cho phép phương pháp số khác nhau để giải các phương trình SDE đảo ngược thời gian.
 Với tất cả các quá trình khuếch tán, tồn tại một quá trình tất định tương ứng mà quỹ đạo này chia sẻ cùng một hàm mật độ xác suất cận biên $\lbrace p_t (\bold{x}) \rbrace_{t=0}^T$ cùng với phương trình SDE.
-Quá trình tất định này thỏa mãn một phương trình ODE (chi tiết được trình bày trong phục lục ):
+Quá trình tất định này thỏa mãn một phương trình ODE (chi tiết được trình bày trong phụ lục \ref{D.1}):
 
 \begin{equation} \label{eq:13}
     d \bold{x} = \Big \lbrack \bold{f}(\bold{x}, t) - \dfrac{1}{2}g(t)^2 \nabla_{\bold{x}} \log p_t (\bold{x}) \Big \rbrack dt
@@ -348,13 +348,13 @@ Ta đặt tên ODE trong công thức \ref{eq:13} là phương trình ODE dòng 
 Khi hàm điểm số được xấp xỉ bởi một mô hình dựa trên điểm số phụ thuộc vào thời gian, thường là một mạng neuron là một ví dụ của một ODE neuron \citep{chen2018neural}.
 
 \textbf{Tính toán chính xác độ hợp lý} Tận dụng sự liên kết với các phương trình ODE neuron, ta có thể tính hàm mật độ được định nghĩa bởi công thức \ref{eq:13} thông qua sự thay đổi tức thời của các biến trong công thức \citep{chen2018neural}.
-Điều này cho phép ta tính toán được \textit{chính xác độ hợp lý trên bất kỳ dữ liệu đầu vào nào} (chi tiết trong phụ lục).
+Điều này cho phép ta tính toán được \textit{chính xác độ hợp lý trên bất kỳ dữ liệu đầu vào nào} (chi tiết trong phụ lục \ref{D.2}).
 Một ví dụ, ta báo cáo hàm âm log của độ hợp lý (negative log-likelihoods - NLLs) được đo trên bits/dim trên tập CIFAR-10 trong bảng \ref{tab:2}.
-Ta tính log của độ hợp lý một cách đồng đều trên dữ liệu đã được giải lượng tự và chỉ so sánh với có các mô hình được đánh giá theo cùng một cách (bỏ qua các mô hình được đánh giá với giải lượng tử hóa biến phân \citep{ho2019flow++} hoặc ữ liệu rời rạc), ngoại trừ với DDPM (L/$L_{\mathrm{simple}}$) mà giá trị ELBO (được gán nhãn với $\ast$) được báo cáo trên tập rời rạc.
+Ta tính log của độ hợp lý một cách đồng đều trên dữ liệu đã được giải lượng tự và chỉ so sánh với có các mô hình được đánh giá theo cùng một cách (bỏ qua các mô hình được đánh giá với giải lượng tử hóa biến phân \citep{ho2019flow++} hoặc dữ liệu rời rạc), ngoại trừ với DDPM (L/$L_{\mathrm{simple}}$) mà giá trị ELBO (được gán nhãn với $\ast$) được báo cáo trên tập rời rạc.
 Các kết quả chính: (i) Với cùng mô hình DDPM trong \citep{ho2020denoising}, ta thu được bits/dim cao hơn ELBO, khi độ hợp lý của ta là chính xác;
 (ii) Sử dụng cùng cấu trúc, ta huấn luyện mô hình DDPM khác với hàm mục tiêu liên tục trong công thức \ref{eq:7} cũng cải thiện thêm độ hợp lý;
 (iii) với sub-VP SDEs, ta luôn luôn thu được độ hợp lý cao hơn so với VP SDEs;
-(iv) với kiến trúc được cải thiện (ví dụ DDPM++ ở mục ) và sub-VP SDE, ta có thể lập một kỷ lục mới bits/dim là 2.99 trên tập CIFAR-10 giải lượng tử đều ngay cả không sử dụng \textit{huấn luyện cực đại hóa độ hợp lý}.
+(iv) với kiến trúc được cải thiện (ví dụ DDPM++ ở mục \ref{4.4}) và sub-VP SDE, ta có thể lập một kỷ lục mới bits/dim là 2.99 trên tập CIFAR-10 giải lượng tử đều ngay cả không sử dụng \textit{huấn luyện cực đại hóa độ hợp lý}.
 
 
 \begin{table}[h!]
@@ -371,7 +371,7 @@ Các kết quả chính: (i) Với cùng mô hình DDPM trong \citep{ho2020denoi
         Residual Flow \citep{chen2019residual} & 3.28 & 46.37 \\
         FFJORD \citep{grathwohl2018ffjord} & 3.40 & - \\
         Flow++ \citep{ho2019flow++} & 3.29 & - \\
-        DDPM (L) \cite{ho2020denoising} & $\leq 3.70^{\ast}$  & 13.51 \\
+        DDPM (L) \citep{ho2020denoising} & $\leq 3.70^{\ast}$  & 13.51 \\
         DDPM ($L_{\mathrm{simple}}$) \citep{ho2020denoising} & $\leq 3.75^{\ast}$ & 3.17 \\
         \hline
         DDPM & 3.28 & 3.37 \\
@@ -434,11 +434,11 @@ Ta cung cấp các kiểm chứng thực nghiệm bổ sung về tính chất n�
 \end{figure}
 
 \textbf{Lấy mẫu hiệu quả} Với một ODE neuron, ta có thể lấy mẫu $\bold{x}(0) \sim p_0$ bằng cách giải phương trình ở công thức \ref{eq:13} từ các điều kiện $\bold{x}(T) \sim p_T$.
-Sử dụng một chiến lược rời rạc hóa cố định ta có thể tạo ra các mẫu có khả năng cạnh tranh cao, đặc biệt khi sử dụng cùng vơi shbooj hiệu chỉnh (bảng \ref{tab:1}, "bộ lấy mẫu dòng xác suất", chi tiết ở phụ lục \ref{D.3}).
+Sử dụng một chiến lược rời rạc hóa cố định ta có thể tạo ra các mẫu có khả năng cạnh tranh cao, đặc biệt khi sử dụng cùng với bộ hiệu chỉnh (bảng \ref{tab:1}, "bộ lấy mẫu dòng xác suất", chi tiết ở phụ lục \ref{D.3}).
 Sử dụng một bộ giải phương trình ODE dạng hộp đen \citep{dormand1980family} không những chỉ tạo ra những mẫu chất lượng cao (\ref{tab:2}, chi tiết ở phụ lục \ref{D.4}) mà còn cho phép ta đánh đổi độ chính xác cho tính hiệu quả.
 Với khả năng chống chịu sai lệch cao hơn, số hàm đánh giá có thể được giảm hơn 90 \% mà không cần làm ảnh hưởng chất lượng của mẫu (hình \ref{fig:3})
 
-\subsection{Các cải thiện về kiến trúc của mô hình}
+\subsection{Các cải thiện về kiến trúc của mô hình} \label{4.4}
 
 Ta khám phá nhiều thiết kế kiến trúc mới cho mô hình dựa trên điểm số sử dụng cả VE và VP SDEs (chi tiết ở phụ lục \ref{H}), với ta huấn luyện các mô hình với các hàm mục tiêu rời rạc như SMLD/DDPM.
 Ta áp dụng trực tiếp các kiến trúc của VP SDEs cho sub-VP SDEs vì tính tương đồng của hai mô hình này.
@@ -448,7 +448,7 @@ Bằng cách chuyển sang sử dụng công thức huấn luyện liên tục �
 Các kiến trúc được chọn được ký hiệu là NCSN++ cont. và DDPM++ cont. trong bảng \ref{tab:3} lần lượt cho VE và VP/sub-VP SDEs.
 Các kết quả được báo cáo trong bảng \ref{tab:3} tương ướng với các checkpoint với FID nhỏ nhất trong quá trình huấn luyện, với các mẫu được tạo ra với bộ lấy mẫu PC.
 Ngược lại, chỉ số FID và các giá trị NLL trong bảng \ref{tab:2} được báo cáo cho checkpoint cuối cùng trong quá trình huấn luyện, và các bộ lấy mẫu thu được với một bộ giải phương trình ODE là một hộp đen.
-Như được trình bày trong b ảng \ref{tab:3}, VE SDEs thường cho các mẫu có chất lượng tốt hơn VP/sub-VP SDE.
+Như được trình bày trong bảng \ref{tab:3}, VE SDEs thường cho các mẫu có chất lượng tốt hơn VP/sub-VP SDE.
 Điều này cho thấy những người người làm thực tiễn có xu hướng thích làm thí nghiệm với các phương trình ngẫu nhiên SDEs khác nhau cho nhiều phạm vi dữ liệu và kiến trúc.
 
 Mô hình cho mẫu chất lượng tốt nhất là NCSN++ cont. (deep, VE), có chiều sâu gấp đôi và tạo kỷ lục mới cho cả inception score và FID cho bài toán sinh mẫu không có điều kiện trên tập CIFAR-10.
@@ -652,7 +652,7 @@ với $\Sigma_{\mathrm{VP}}(t) := \Cov \lbrack \bold{x}(t) \rbrack$ với $\lbra
 Giải phương trình ODE này, ta thu được:
 
 \begin{equation} \label{eq:26}
-    \Sigma_{\mathrm{VP}}(t) = \bold{I} + e^{\int_{0}^t - \beta(s)ds} (\Sigma_{\mathrm{VP}}(t) - \bold{I})
+    \Sigma_{\mathrm{VP}}(t) = \bold{I} + e^{\int_{0}^t - \beta(s)ds} (\Sigma_{\mathrm{VP}}(0) - \bold{I})
 \end{equation}
 
 Ta nhận thấy rất rõ ràng rằng $\Sigma_{\mathrm{VP}}(t)$ luôn luôn bị chặn khi cho trước $\Sigma_{VP}(0)$.
@@ -696,7 +696,7 @@ Như vậy kết quả là tất cả các phương trình SDE được giới t
 
 Dưới đây ta sẽ thảo luận về khởi tạo của VE và VP SDE mà rời rạc hóa mang lại các mô hình SMLD và DDPM, và sub-VP SDE cụ thể được sử dụng trong thử nghiệm của ta.
 Trong SMLD, các ngưỡng nhiễu $\lbrace \sigma_i \rbrace_{i=1}^N$ thường là một dãy hình học với $\sigma_{\min}$ được cố định là 0.01 và $\sigma_{\max}$ được chọn theo kỹ thuật 1 trong \citep{song2020improved}.
-Thông thường, mô hình SMLD chuẩn hóa ảnh đầu vào trong khoảng $\lbrack 0, \rbrack$.
+Thông thường, mô hình SMLD chuẩn hóa ảnh đầu vào trong khoảng $\lbrack 0, 1\rbrack$.
 Khi $\lbrace \sigma \rbrace_{i=1}^N$ là một dãy hình học, ta có $\sigma\big( \dfrac{i}{N} \big)=\sigma_i=\sigma_{\min} \Big( \dfrac{\sigma_{\max}}{\sigma_{\min}} \Big)^{\dfrac{i-1}{N-1}}$ với $i=1, 2, \dots, N$.
 Trong giới hạn $N \rightarrow \infty$, ta có $\sigma(t) = \sigma_{\min} \Big( \dfrac{\sigma_{\max}}{\sigma_{\min}} \Big)^t$ với $t \in \left ( 0, 1 \right ]$.
 Phương trình VE SDE tương ứng là:
@@ -712,7 +712,7 @@ và nhân gây xáo trộn có thể thu được qua công thức \ref{eq:29}:
 \end{equation}
 
 Một điều khá thú vị là khi $t=0$, theo định nghĩa $\sigma(0) = \sigma_0 = 0$(theo quy ước ở công thức \ref{eq:20}), nhưng $\sigma(0^+):=\lim_{t \rightarrow 0^+}\sigma(t)= \sigma_{\min} \neq 0$.
-Mặt khác, $\sigma(t)$ cho SMLD không khả vi do $\sigma(0) \neq \sigma(0^+)$ làm cho VE SDE tỏng công thức \ref{eq:21} không xác định với $t=0$.
+Mặt khác, $\sigma(t)$ cho SMLD không khả vi do $\sigma(0) \neq \sigma(0^+)$ làm cho VE SDE trong công thức \ref{eq:21} không xác định với $t=0$.
 Trong thực tế, ta tránh vấn đề này bằng cách luôn luôn giải phương trình SDE và dòng xác suất tương ứng ODE trong khoảng $t \in \lbrack \epsilon, 1 \rbrack$ với một hằng số nhỏ $\epsilon > 0$ và ta sử dụng $\epsilon = 10^{-5}$ trong các thử nghiệm VE SDE.
 
 \begin{figure}[h!]
@@ -743,10 +743,10 @@ Nhân gây xáo trộn được cho bởi công thức:
 
 Đối với DDPM, không có vấn đề gián đoạn với VP SDE tuy nhiên có các vấn đề không ổn định số học cho quá trình huấn luyện và lấy mẫu tại $t=0$ vì hiện tượng triệt tiêu phương sai của $\bold{x}(t)$ khi $t \rightarrow 0$.
 Vì vậy, cũng như VE SDE, ta chỉ tính toán ở khoảng $t \in \lbrack \epsilon, 1 \rbrack$ với một số $\epsilon > 0$ nhỏ.
-Khi lấy mẫu, ta chọn $\epsilon = 10^{-3}$ nê phương sai của $\bold{x}(\epsilon)$ trong VP SDE khớp với phương sai của $\bold{x}_1$ trong DDPM.
+Khi lấy mẫu, ta chọn $\epsilon = 10^{-3}$ nên phương sai của $\bold{x}(\epsilon)$ trong VP SDE khớp với phương sai của $\bold{x}_1$ trong DDPM.
 Khi huấn luyện và tính độ hợp lý, ta chọn $\epsilon = 10^{-5}$ về mặt thực nghiệm cho kết quả tốt hơn.
 
-Để kiểm tra tính đúng đắn của phương trình SDE tổng quát đối với SMLD và DDPM, ta so sánh nhân gây xáo trộn của SDÉ và xích Markov rời rạc ban đầu ở hình \ref{fig:5}.
+Để kiểm tra tính đúng đắn của phương trình SDE tổng quát đối với SMLD và DDPM, ta so sánh nhân gây xáo trộn của SDE và xích Markov rời rạc ban đầu ở hình \ref{fig:5}.
 Mô hình SMLD và DDPM đều sử dụng $N=1000$ ngưỡng nhiễu.
 Đối với SMLD, ta chỉ cần so sánh phương sai của nhân gây xáo trộn khi cùng trung bình.
 Đối với DDPM, ta so sánh hệ số nhân của trung bình và phương sai.
@@ -817,7 +817,7 @@ với ta định nghĩa:
     \tilde{\bold{f}}(\bold{x}, t) := \bold{f}(\bold{x}, t) - \dfrac{1}{2} \nabla . \lbrack \bold{G}(\bold{x}, t) \bold{G}(\bold{x}, t)^T \rbrack - \dfrac{1}{2} \bold{G}(\bold{x}, t) \bold{G}(\bold{x}, t)^T \nabla_{\bold{x}} \log p_t(\bold{x})
 \end{equation*}
 
-Kiểm tra công thức \ref{eq:37}, ta quan sát thấy rằng công thức này tương đương với phương trình Kolmogorov thuận của phương trình SDE với $\tilde{\bold{G}} (\bold{x}, t) := \bold{0}$(Phương trình Kolmogorov thuận tỏng trường hợp này còn được gọi là phương trình Liouville)
+Kiểm tra công thức \ref{eq:37}, ta quan sát thấy rằng công thức này tương đương với phương trình Kolmogorov thuận của phương trình SDE với $\tilde{\bold{G}} (\bold{x}, t) := \bold{0}$(Phương trình Kolmogorov thuận trong trường hợp này còn được gọi là phương trình Liouville)
 
 \begin{equation*}
     d \bold{x} = \tilde{\bold{f}} (\bold{x}, t) dt + \tilde{\bold{G}}(\bold{x}, t) d \bold{w}
@@ -1054,7 +1054,7 @@ Ta gọi công thức \ref{eq:47} là phương pháp ancestral sampling cho mô 
 Bộ hiệu chỉnh có thể là bất kỳ phương pháp MCMC nào dựa trên điểm số.
 Trong quá trình lấy mẫu sử dụng PC, ta luân phiên chạy giữa bộ dự đoán và bộ hiệu chỉnh được miêu tả trong thuật toán \ref{alg:1}.
 Ví dụ, khi sử dụng bộ giải phương trình SDE khuếch tán đảo ngược thời gian (phụ lục \ref{E}) là bộ dự đoán, và tôi luyện động học Langevin \citep{song2019generative} là bộ hiệu chỉnh, ta có thuật toán \ref{alg:2} và thuật toán \ref{alg:3} cho VE và VP SDE tương ứng,
-với $\lbrace \epsilon_i \rbrace_{i=0}^{N-1}$ là độ dài bước cho động học Langevin được trình bày bên Dưới
+với $\lbrace \epsilon_i \rbrace_{i=0}^{N-1}$ là độ dài bước cho động học Langevin được trình bày bên dưới
 
 \begin{algorithm}[h!]
     \DontPrintSemicolon
@@ -1150,9 +1150,9 @@ Khi kích thước nhóm nhỏ, ta thay $\lVert \bold{z} \rVert_2$ với $\sqrt{
 \end{algorithm}
 
 \textbf{Khử nhiễu} Cho cả hai mô hình SMLD và DDPM, các mẫu dữ liệu được sinh ra thường bao gồm một lượng nhỏ nhiễu rất khó được phát hiện bởi con người.
-Được chú ý bởi \cite{jolicoeur2020adversarial}, FID có thể tệ hơn đáng kể nếu không được loại bỏ nhiễu này.
+Được chú ý bởi \citep{jolicoeur2020adversarial}, FID có thể tệ hơn đáng kể nếu không được loại bỏ nhiễu này.
 Sự nhạy cảm với nhiễu cũng là một lý do vì sao mô hình NCNS được huấn luyện với SMLD hoạt động kém hơn so với mô hình DDPM về chỉ số FID, bởi vì các mô hình trước không sử dụng bước khử nhiễu khi kết thúc lấy mẫu trong khi các mô hình mới có khử nhiễu.
-Trong tất cả các thử nghiệm của công trình này, ta đảm bảo có bước khử nhiễu khi kết thúc quá trình lấy mẫu, sử dụng công thức Tweedie \cite{efron2011tweedie}
+Trong tất cả các thử nghiệm của công trình này, ta đảm bảo có bước khử nhiễu khi kết thúc quá trình lấy mẫu, sử dụng công thức Tweedie \citep{efron2011tweedie}
 
 \begin{figure}[h!]
     \centering
@@ -1164,7 +1164,7 @@ Trong tất cả các thử nghiệm của công trình này, ta đảm bảo c�
 \end{figure}
 
 \textbf{Huấn luyện} Ta sử dụng cùng kiến trúc trong \citep{ho2020denoising} cho mô hình dựa trên điểm số của ta.
-Cho VE SDE, ta huấn luyện một moohinhf với hàm mục tiêu SMLD gốc trong công thức \ref{eq:1}, tương tự cho VP SDE,
+Cho VE SDE, ta huấn luyện một mô hình với hàm mục tiêu SMLD gốc trong công thức \ref{eq:1}, tương tự cho VP SDE,
 ta sử dụng hàm mục tiêu DDPM ban đầu trong công thức \ref{eq:3}.
 Ta áp dụng số ngưỡng nhiễu là 1000 ngưỡng nhiễu cho huấn luyện các mô hình.
 Kết quả ở trong hình \ref{fig:9}, ta huấn luyện mô hình NCSN++ (được trình bày ở phụ lục \ref{H}) trên tạp LSUN 256 $\times$ 256 bedroom và LSUN 256 $\times$ 256 church \citep{yu2015lsun} với VESDE và hàm mục tiêu liên tục ở công thức \ref{eq:7}.
@@ -1233,7 +1233,7 @@ Khi không chú ý gì thêm, ta sử dụng một bước hiệu chỉnh trên 
 Ta sử dụng hai bước hiệu chỉnh trên từng ngưỡng nhiễu cho bộ lấy mẫu chỉ chỉ định trên tập CIFAR-10.
 Để sinh mẫu dữ liệu, batch size là 1024 trên tập CIFAR-10 và 8 trên tập LSUN bedroom/church outdoor.
 
-\label{Các cải thiện về kiến trúc mô hình} \label{H}
+\section{Các cải thiện về kiến trúc mô hình} \label{H}
 
 Ta khám phá nhiều thiết kế kiến trúc để cải thiện mô hình dựa trên điểm số cho cả VE và VP SDEs.
 Nỗ lực của ta mang đến chất lượng mẫu tốt nhất từ trước đến nay trên tập CIFAR-10, độ hợp lý tốt nhất từ trước đến nay CIFAR-10 giải lượng tử hóa đều và cho phép các mẫu có độ trung thực cao trên độ phân giải 1024 $\times$ 1024 từ mô hình sinh dựa trên điểm số.
