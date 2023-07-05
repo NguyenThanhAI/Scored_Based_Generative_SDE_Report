@@ -114,8 +114,8 @@ Ngoài ra, ta đề xuất một phương trình SDE mới trong khung làm vi�
 \subsection{Khử nhiễu khớp điểm số với động học Langevin (SMLD)} \label{2.1}
 
 Đặt $p_{\sigma}(\tilde{\bold{x}} \vert \bold{x}) \vcentcolon = \mathcal{N}(\tilde{\bold{x}};\bold{x}, \sigma^2 \bold{I})$ là một nhân tạo ra nhiễu, và $p_{\sigma}(\tilde{\bold{x}})\vcentcolon = \int p_{\mathrm{data}}(\bold{x}) p_{\sigma}(\tilde{\bold{x}} \vert \bold{x}) d \bold{x}$, với $p_{\mathrm{data}}$ ký hiệu là phân phối dữ liệu.
-Ta xét một dãy các mức nhiễu dương $\sigma_{\min} < \sigma_2 < \dots < \sigma_N = \sigma_{\max}$.
-Thông thường, $\sigma_{\min}$ đủ nhỏ dể $p_{\sigma_{\min}} \approx p_{\mathrm{data}}(\bold{x})$, và $\sigma_{\max}$ đủ lớn để $p_{\sigma_{\max}}\approx \mathcal{N}(\bold{x}; \bold{0}, \sigma_{\max}^2 \bold{I})$.
+Ta xét một dãy các mức nhiễu dương $\sigma_{\min} = \sigma_1 < \sigma_2 < \dots < \sigma_N = \sigma_{\max}$.
+Thông thường, $\sigma_{\min}$ đủ nhỏ để $p_{\sigma_{\min}} \approx p_{\mathrm{data}}(\bold{x})$, và $\sigma_{\max}$ đủ lớn để $p_{\sigma_{\max}}\approx \mathcal{N}(\bold{x}; \bold{0}, \sigma_{\max}^2 \bold{I})$.
 \citep{song2019generative} đề xuất huấn luyện một mạng điểm số có điều kiện nhiễu (Noise Conditional Score Network - NCSN), ký hiệu $\bold{s}_{\boldsymbol{\theta}}(\bold{x}, \sigma)$ với một tổng có trọng số của các hàm khớp điểm số khử nhiễu \citep{vincent2011connection}:
 
 \begin{equation} \label{eq:1}
@@ -169,7 +169,7 @@ Tổng quát của khung làm việc của ta được miêu tả trong hình \r
     \centering
     \includegraphics[width=\textwidth]{2.png}
     \caption{\textbf{Tổng quan của một mô hình sinh dựa trên điểm số với phương trình SDE}
-    Ta có thể ánh xạ dữ liệu thành một phân phối nhiễu (phân phối tiên nghiệm) với một phương trình SDE (mục \ref{Pertubring-data-with-SDE}) và đảo ngược phương trình SDE này cho quá trình sinh dữ liệu (mục ).
+    Ta có thể ánh xạ dữ liệu thành một phân phối nhiễu (phân phối tiên nghiệm) với một phương trình SDE (mục \ref{Pertubring-data-with-SDE}) và đảo ngược phương trình SDE này cho quá trình sinh dữ liệu (mục \ref{3.2}).
     Ta cũng có thể đảo ngược dòng xác suất tương ứng phương trình ODE (mục \ref{4.3}) thu được một quá trình tất định lấy mẫu từ cùng phân phối với SDE.
     Cả phương trình SDE đảo ngược thời gian và dòng xác suất phương trình ODE có thể đạt được bằng các ước lượng điểm số $\nabla_{\bold{x}} \log p_t (\bold{x})$ (mục \ref{Estimating-Scores-For-The-SDE}).}
     \label{fig:2}
@@ -192,9 +192,9 @@ Từ sau đây ta ký hiệu $p_t (\bold{x})$ là hàm mật độ xác suất c
 
 Thông thường, $p_T$ là một phân phối phi cấu trúc không bao gồm thông tin nào của $p_0$, ví dụ như phân phối Gaussian với trung bình và phương sai cố định.
 Có nhiều cách để thiết kế SDE trong phương trình \ref{eq:5} trong quá trình khuếch tán phân phối dữ liệu thành một phân phối tiên nghiệm cố định.
-Ta cung cấp một số ví dụ trong mục  thu được quá trình tổng quát hóa liên tục của SMLD và DDPM.
+Ta cung cấp một số ví dụ trong mục \ref{3.4} thu được quá trình tổng quát hóa liên tục của SMLD và DDPM.
 
-\subsection{Sinh mẫu dữ liệu bằng cách đảo ngược phương trình SDE}
+\subsection{Sinh mẫu dữ liệu bằng cách đảo ngược phương trình SDE} \label{3.2}
 
 Ta bắt đầu từ các mẫu dữ liệu nhiễu $\bold{x}(T) \sim p_T$ và đảo ngược quá trình, ta có thể thu được các mẫu $\bold{x}(0) \sim p_0$.
 Một kết quả đáng chú ý từ \citep{anderson1982reverse} chỉ ra rằng đảo ngược một quá trình khuếch tán cũng là một quá trình khuếch tán, đi ngược theo thời gian bởi một phương trình SDE đảo ngược thời gian:
@@ -260,7 +260,7 @@ vì vậy, nhiễu dùng để xáo trộn được dùng trong SMLD và DDPM t�
 Một điều thú vị là phương trình SDE của công thức \ref{eq:9} luôn luôn tạo ra một quá trình với phương sai bùng nổ khi $t \rightarrow \infty$, trong khi phương trình ở công thức \ref{eq:11} thu được một quá trình với phương sai không đổi là một khi phân phối ban đầu có phương sai là một (chứng minh ở phụ lục \ref{B}).
 Vì sự khác biệt này, kể từ đây ta sẽ gọi phương trình ở công thức \ref{eq:9} là Variance Exploding (VE) SDE, và phương trình ở công thức \ref{eq:11} là Variance Preserving (VP) SDE.
 
-Lấy cảm hứng từ VP SDE, ta đề xuất một loại phương trình SDE mới đặc biệt tốt trên độ hợp lý (mục ) được cho bởi công thức:
+Lấy cảm hứng từ VP SDE, ta đề xuất một loại phương trình SDE mới đặc biệt tốt trên độ hợp lý (mục \ref{4.3}) được cho bởi công thức:
 
 \begin{equation} \label{eq:12}
     d \bold{x} = -\dfrac{1}{2} \beta(t) \bold{x} dt + \sqrt{\beta(t) (1-e^{-2\int_{0}^{t} \beta(s)ds} )} d \bold{w}
@@ -324,7 +324,7 @@ Bộ lấy mẫu PC tổng quát hóa các phương pháp lấy mẫu ban đầu
 
 Ta sẽ thử bộ lấy mẫu PC trên các mô hình SMLD và DDPM (thuật toán \ref{alg:2} và thuật toán \ref{alg:3} trong phụ lục \ref{G}) được huấn luyện với hàm mục tiêu rời rạc ban đầu trong các công thức \ref{eq:1} và \ref{eq:3}.
 Các công thức này cho ta thấy sự phù hợp của bộ lấy mẫu PC với mô hình dựa trên điểm số được huấn luyện với một số bước cố định các mức nhiễu.
-Ta tổng hợp khả năng của các bộ lấy mẫu khác nhau trong bảng \ref{tab:1}, với dòng xác suất là một bộ dự đoán sẽ được trình bày ở trong mục \ref{Probability-Flow-and-Connection-to-Neural-ODEs}.
+Ta tổng hợp khả năng của các bộ lấy mẫu khác nhau trong bảng \ref{tab:1}, với dòng xác suất là một bộ dự đoán sẽ được trình bày ở trong mục \ref{4.3}.
 Cấu hình chi tiết về các thí nghiệm và các kết quả chi tiết hơn được trình bày ở phụ lục \ref{G}.
 Ta quan sát thấy rằng bộ lấy mẫu khuếch tán ngược luôn luôn tốt hơn so với các phương pháp ancestral sampling, chỉ căn chỉnh (C2000) và kém hơn so với các bộ lấy mẫu khác (PC2000, PC1000) cùng với lượng tính toán.
 (Thực tế, ta cần nhiều bước căn chỉnh hơn trên một mức nhiễu, và vì vậy cần tính toán nhiều hơn để khớp với khả năng của các bộ lấy mẫu khác).
