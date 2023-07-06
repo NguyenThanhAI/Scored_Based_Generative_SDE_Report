@@ -225,7 +225,7 @@ Nếu $\bold{f}(.,t)$ là hàm affine, nhân chuyển tiếp luôn luôn là ph�
 Với phương trình SDE tổng quát hơn, ta có thể giải phương trình Kolmogorov thuận \citep{oksendal2003stochastic} để thu được $p_{0t} (\bold{x}(t) \vert \bold{x}(0))$.
 Một cách khác, ta có thể mô phỏng phương trình SDE để lấy mẫu từ $p_{0t}(\bold{x}(t) \vert \bold{x}(0))$ và thay thế thành phần khớp điểm số khử nhiễu trong \ref{eq:7} với khớp điểm số theo lát để huấn luyện mô hình mà bỏ qua việc tính toán $\nabla_{\bold{x}(t)} \log p_{0t} (\bold{x}(t) \vert \bold{x}(0))$ (xem phụ lục \ref{A}).
 
-\subsection{Một số ví dụ: VE, VP SDE và các SDE khác}
+\subsection{Một số ví dụ: VE, VP SDE và các SDE khác} \label{3.4}
 
 Nhiễu được dùng để làm xáo trộn dữ liệu trong SMLD và DDPM có thể được xem là phiên bản rời rạc hóa của hai phương trình SDE khác nhau.
 Ta sẽ nói ngắn gọn về phần này và chi tiết được trình bày ở phụ lục \ref{B}.
