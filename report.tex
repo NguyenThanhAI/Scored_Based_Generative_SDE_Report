@@ -60,7 +60,7 @@ Trường Đại học Khoa học Tự nhiên\\
     Một điều quan trọng là phương trình vi phân ngược theo thời gian chỉ phụ thuộc vào trường gradient phụ thuộc vào thời gian (được gọi là điểm số) của phân phối dữ liệu bị xáo trộn bởi nhiễu.
     Bằng việc tận dụng những bước tiến trong mô hình sinh dựa trên điểm, ta có thể ước lượng chính xác điểm với mạng neuron, và sử dụng các bộ giải phương trình vi phân ngẫu nhiên (SDE) bằng phương pháp số để sinh ra các mẫu dữ liệu.
     Ta sẽ chỉ ra rằng khung làm việc này bao gồm các cách tiếp cận trước đây về mô hình sinh dựa trên điểm số và các mô hình khuếch tán xác suất, cho phép các thủ tục mới để sinh dữ liệu ra đời với những khả năng mạnh hơn.
-    Đặc biệt, ta sẽ giới thiệu một bộ dự đoán - căn chỉnh để căn chỉnh sai lệch trong quá trình biến đổi của phương trình vi phân ngẫu nhiên ngược thời gian được rời rạc hóa.
+    Đặc biệt, ta sẽ giới thiệu một bộ dự đoán - hiệu chỉnh để hiệu chỉnh sai lệch trong quá trình biến đổi của phương trình vi phân ngẫu nhiên ngược thời gian được rời rạc hóa.
     Ta cũng thu được một mạng neuron ODE tương đương được lấy mẫu từ cùng phân phối như SDE, nhưng ngoài ra cũng cho phép tính toán chính xác độ hợp lý, và cải thiện độ hiệu quả của quá trình lấy mẫu.
     Ngoài ra, ta cũng cung cấp một cách mới để giải các bài toán ngược với các mô hình dựa trên điểm số, được giải thích với các thí nghiệm trên sinh mẫu dựa trên điều kiện nhãn, vẽ ảnh và tô màu.
     Kết hợp với nhiều bước tiến về các kiến trúc mô hình, ta đã đạt kỷ lục với việc sinh ảnh trên tập CIFAR-10 với điểm Inception score là 9.89 và FID là 2.20 và độ hợp lý rất tốt 2.99 bits/dim, và thể hiện khả năng sinh ảnh chân thực với ảnh có độ phân giải 1024 $\times$ 1024 lần đầu tiên từ một mô hình sinh dựa trên điểm số.
@@ -97,7 +97,7 @@ Vì vậy ta có thể xấp xỉ SDE ngược thời gian bằng cách huấn l
 Khung làm việc đề xuất có nhiều đóng góp về mặt lý thuyết và thực tiễn:
 
 \textbf{Lấy mẫu linh hoạt và tính toán độ hợp lý:} Ta có thể sử dụng bất kỳ một bộ giải phương trình SDE đa chức năng nào để tích hợp phương trình SDE đảo ngược thời gian cho bài toán lấy mẫu.
-Hơn nữa, ta đề xuất hai phương pháp đặc biệt mà không phù hợp với phương trình SDE nói chung: (i) Bộ lấy mẫu Dự đoán - Căn chỉnh (PC) kết hợp với bộ giải SDE bằng phương pháp số và cách tiếp cận MCMC (Markov Chain Monte Carlo) dựa trên điểm số, như Langevin MCMC \citep{parisi1981correlation} và HMC \citep{neal2011mcmc} và (ii) các bộ lấy mẫu tất định dựa trên dòng xác suất của các phương trình vi phân thường (ODE).
+Hơn nữa, ta đề xuất hai phương pháp đặc biệt mà không phù hợp với phương trình SDE nói chung: (i) Bộ lấy mẫu Dự đoán - Hiệu chỉnh (PC) kết hợp với bộ giải SDE bằng phương pháp số và cách tiếp cận MCMC (Markov Chain Monte Carlo) dựa trên điểm số, như Langevin MCMC \citep{parisi1981correlation} và HMC \citep{neal2011mcmc} và (ii) các bộ lấy mẫu tất định dựa trên dòng xác suất của các phương trình vi phân thường (ODE).
 Phương pháp thứ nhất hợp nhất và cải thiện các phương pháp lấy mẫu hiện có cho các mô hình dựa trên điểm số.
 Phương pháp thứ hai cho phép lấy mẫu thích ứng nhanh thông qua một hộp đen là một bộ giải phương trình ODE, các thao tác trên dữ liệu linh hoạt thông qua mã ẩn, mỗi mã có tính duy nhất và điều đáng chú ý ta có thể tính chính xác độ hợp lý.
 
@@ -211,7 +211,7 @@ Một khi điểm số của phân phối cận biên $\nabla_{\bold{x}} p_t(\bo
 Điểm số của một phân phối có thể được ước lượng bằng cách huấn luyện một mô hình dựa trên điểm số trên các mẫu với khớp điểm số \citep{hyvarinen2005estimation,song2020sliced}. Để ước lượng $\nabla_{\bold{x}} \log p_t(\bold{x})$, ta có thể huấn luyện một mô hình dựa trên điểm số phụ thuộc vào thời gian $\bold{s}_{\boldsymbol{\theta}}(\bold{x}, t)$ thông qua một tổng quát hóa liên tục từ phương trình \ref{eq:1} và phương trình \ref{eq:3}:
 
 \begin{equation} \label{eq:7}
-    \boldsymbol{\theta}^{\ast} = \argmin_{\boldsymbol{\theta}} \mathbb{E}_t \Big \lbrace  \lambda(t) \mathbb{E}_{\bold{x}(0)} \mathbb{E}_{\bold{x}(t) \vert \bold{x}(0)} \big \lbrack \lVert \bold{s}_{\boldsymbol{\theta}} (\bold{x}(t), t) - \nabla_{\bold{x}(t)} \log p_{0t} (\bold{x}(t) \vert \bold{x}(0)) \rVert_2^2 \big \lbrack \Big \rbrace
+    \boldsymbol{\theta}^{\ast} = \argmin_{\boldsymbol{\theta}} \mathbb{E}_t \Big \lbrace  \lambda(t) \mathbb{E}_{\bold{x}(0)} \mathbb{E}_{\bold{x}(t) \vert \bold{x}(0)} \big \lbrack \lVert \bold{s}_{\boldsymbol{\theta}} (\bold{x}(t), t) - \nabla_{\bold{x}(t)} \log p_{0t} (\bold{x}(t) \vert \bold{x}(0)) \rVert_2^2 \big \rbrack \Big \rbrace
 \end{equation}
 
 với $\lambda: \lbrace 0, T \rbrace \rightarrow \mathbb{R}_{>0}$ là một hàm trọng số dương,
@@ -284,8 +284,8 @@ Sau khi huấn luyện một mô hình dựa trên điểm số phụ thuộc v�
     Vùng tối màu thu được với cùng cách tính toán (số các hàm điểm số).
     Trung bình và độ lệch tiêu chuẩn được đưa ra trên 5 lần chạy.
     "P1000" hoặc "P2000": bộ lấy mẫu mà chỉ dự đoán sử dụng 1000 hoặc 2000 bước.
-    "C2000": bộ lấy mẫu chỉ căn chỉnh sử dụng 2000 bước.
-    "PC1000": Bộ lấy mẫu dự đoán căn chỉnh sử dụng 1000 bước dự đoán và 1000 bước căn chỉnh.}
+    "C2000": bộ lấy mẫu chỉ hiệu chỉnh sử dụng 2000 bước.
+    "PC1000": Bộ lấy mẫu dự đoán hiệu chỉnh sử dụng 1000 bước dự đoán và 1000 bước hiệu chỉnh.}
     \resizebox{\columnwidth}{!}{
         \begin{tabular}{c|c|c|c|c|c|c|c|c}
             \hline
@@ -308,30 +308,30 @@ Ta có thể áp dụng bất kỳ cách nào cho phương trình SDE đảo ng�
 
 Ancestral sampling, là phương pháp lấy mẫu của DDPM trong công thức \ref{eq:4} thực tế tương ứng với một phương pháp rời rạc hóa đặc biệt của phương trình VP SDE đảo ngược thời gian (công thức \ref{eq:11}) (phụ lục \ref{E}).
 Để thu được luật lấy mẫu sử dụng ancestral sampling cho phương trình SDE mới không phải là việc dễ dàng.
-Để khắc phụ điều này, ta đề xuất \textit{bộ lấy mẫu khuếch tán ngược} (chi tiết trong phụ lục \ref{E}), bộ lấy mẫu này rời rạc hóa phương trình SDE đảo ngược thời gian theo cùng cách với phương trình thuận, và vì vậy có thể đễ dàng thực hiện sử dụng kết quả rời rạc hóa của quá trình thuận
+Để khắc phụ điều này, ta đề xuất \textit{bộ lấy mẫu khuếch tán ngược} (chi tiết trong phụ lục \ref{E}), bộ lấy mẫu này rời rạc hóa phương trình SDE đảo ngược thời gian theo cùng cách với phương trình thuận, và vì vậy có thể đễ dàng thực hiện sử dụng kết quả rời rạc hóa của quá trình thuận.
 Hình \ref{tab:1}, bộ lấy mẫu khuếch tán ngược thể hiện tốt hơn một chút so với ancestral sampling cho cả hai mô hình SMLD và DDPM trên CIFAR-10 (mô hình DDPM sử dụng ancestral sampling cũng có thể áp dụng cho mô hình SMLD, xem phụ lục \ref{F}).
 
-\subsection{Bộ lấy mẫu dự đoán - căn chỉnh}
+\subsection{Bộ lấy mẫu dự đoán - hiệu chỉnh}
 
 Không giống với phương trình SDE tổng quát, ta có thêm thông tin có thể sử dụng để cải thiện lời giải.
-Khi ta có một mô hình dựa trên điểm số $\bold{s}_{\boldsymbol{\theta}^{\ast}} (\bold{x}, t)\approx \nabla_{\bold{x}} \log p_t (\bold{x})$, ta có thể sử dụng cách tiếp cận MCMC dựa trên điểm số ví dụ như Langevin MCMC \citep{parisi1981correlation,grenander1994representations} hoặc HMC \citep{neal2011mcmc} để lấy mẫu trực tiếp từ $p_t$ và căn chỉnh lời giải của một bộ giải phương trình SDE bằng phương pháp số.
+Khi ta có một mô hình dựa trên điểm số $\bold{s}_{\boldsymbol{\theta}^{\ast}} (\bold{x}, t)\approx \nabla_{\bold{x}} \log p_t (\bold{x})$, ta có thể sử dụng cách tiếp cận MCMC dựa trên điểm số ví dụ như Langevin MCMC \citep{parisi1981correlation,grenander1994representations} hoặc HMC \citep{neal2011mcmc} để lấy mẫu trực tiếp từ $p_t$ và hiệu chỉnh lời giải của một bộ giải phương trình SDE bằng phương pháp số.
 
 Cụ thể, tại từng bước thời gian, bộ giải phương trình SDE bằng phương pháp số ban đầu tạo ra một ước lượng của mẫu tại bước tiếp theo, đóng vai trò là một "bộ dự đoán".
-Sau đó, ta dùng MCMC dựa trên điểm số căn chỉnh phân phối cận biên của mẫu đã được ước lượng, đóng vai trò là "bộ căn chỉnh".
-Ý tưởng tương tự với phương pháp dự đoán - căn chỉnh, một họ của các kỹ thuật phương pháp số cho giải hệ phương trình \citep{allgower2012numerical} và ta đặt một tên tương tự cho thuật toán lấy mẫu là bộ lấy mẫu \textit{dự đoán - căn chỉnh}.
+Sau đó, ta dùng MCMC dựa trên điểm số hiệu chỉnh phân phối cận biên của mẫu đã được ước lượng, đóng vai trò là "bộ hiệu chỉnh".
+Ý tưởng tương tự với phương pháp dự đoán - hiệu chỉnh, một họ của các kỹ thuật phương pháp số cho giải hệ phương trình \citep{allgower2012numerical} và ta đặt một tên tương tự cho thuật toán lấy mẫu là bộ lấy mẫu \textit{dự đoán - hiệu chỉnh}.
 Mã giả được được trình bày ở phụ lục \ref{G}.
-Bộ lấy mẫu PC tổng quát hóa các phương pháp lấy mẫu ban đầu của SMLD và DDPM: các phương pháp trước đây sử dụng một hàm đồng nhất là hàm dự đoán và tôi luyện động học Langevin làm bộ căn chỉnh, trong khi các phương pháp sau sử dụng ancestral sampling là bộ dự đoán và hàm đồng nhất là bộ căn chỉnh.
+Bộ lấy mẫu PC tổng quát hóa các phương pháp lấy mẫu ban đầu của SMLD và DDPM: các phương pháp trước đây sử dụng một hàm đồng nhất là hàm dự đoán và tôi luyện động học Langevin làm bộ hiệu chỉnh, trong khi các phương pháp sau sử dụng ancestral sampling là bộ dự đoán và hàm đồng nhất là bộ hiệu chỉnh.
 
 Ta sẽ thử bộ lấy mẫu PC trên các mô hình SMLD và DDPM (thuật toán \ref{alg:2} và thuật toán \ref{alg:3} trong phụ lục \ref{G}) được huấn luyện với hàm mục tiêu rời rạc ban đầu trong các công thức \ref{eq:1} và \ref{eq:3}.
 Các công thức này cho ta thấy sự phù hợp của bộ lấy mẫu PC với mô hình dựa trên điểm số được huấn luyện với một số bước cố định các mức nhiễu.
 Ta tổng hợp khả năng của các bộ lấy mẫu khác nhau trong bảng \ref{tab:1}, với dòng xác suất là một bộ dự đoán sẽ được trình bày ở trong mục \ref{4.3}.
 Cấu hình chi tiết về các thí nghiệm và các kết quả chi tiết hơn được trình bày ở phụ lục \ref{G}.
-Ta quan sát thấy rằng bộ lấy mẫu khuếch tán ngược luôn luôn tốt hơn so với các phương pháp ancestral sampling, chỉ căn chỉnh (C2000) và kém hơn so với các bộ lấy mẫu khác (PC2000, PC1000) cùng với lượng tính toán.
-(Thực tế, ta cần nhiều bước căn chỉnh hơn trên một mức nhiễu, và vì vậy cần tính toán nhiều hơn để khớp với khả năng của các bộ lấy mẫu khác).
-Với tất cả các bộ dự đoán, thêm một bước căn chỉnh cho từng bước dựa đoán (PC1000) làm tăng khối lượng tính toán lên gấp đôi nhưng luôn luôn cải thiện chất lượng mẫu (so với PC1000).
-Hơn nữa, thông thường việc thêm một bước dự đoán và căn chỉnh thường tốt hơn tăng gấp đôi số bước dự đoán mà không thêm bước căn chỉnh (P2000),
+Ta quan sát thấy rằng bộ lấy mẫu khuếch tán ngược luôn luôn tốt hơn so với các phương pháp ancestral sampling, chỉ hiệu chỉnh (C2000) và kém hơn so với các bộ lấy mẫu khác (PC2000, PC1000) cùng với lượng tính toán.
+(Thực tế, ta cần nhiều bước hiệu chỉnh hơn trên một mức nhiễu, và vì vậy cần tính toán nhiều hơn để khớp với khả năng của các bộ lấy mẫu khác).
+Với tất cả các bộ dự đoán, thêm một bước hiệu chỉnh cho từng bước dựa đoán (PC1000) làm tăng khối lượng tính toán lên gấp đôi nhưng luôn luôn cải thiện chất lượng mẫu (so với PC1000).
+Hơn nữa, thông thường việc thêm một bước dự đoán và hiệu chỉnh thường tốt hơn tăng gấp đôi số bước dự đoán mà không thêm bước hiệu chỉnh (P2000),
 khi ta luôn phải nội suy giữa những mức nhiễu (chi tiết trong phụ lục \ref{G}) cho các mô hình SMLD/DDPM.
-Trong hình \ref{fig:9} (phụ lục \ref{G}), ta cung cấp thêm so sánh về mặt chất các mô hình cho các hàm mục tiêu trong công thức \ref{eq:7} trên tập LSUN 256 $\times$ 256 và VE SDE, với các bộ lấy mẫu PC vượt trội hơn hẳn các bộ lấy mẫu chỉ dự đoán với cùng một khối lượng tính toán khi ta dùng một số lượng phù hợp các bước căn chỉnh.
+Trong hình \ref{fig:9} (phụ lục \ref{G}), ta cung cấp thêm so sánh về mặt chất các mô hình cho các hàm mục tiêu trong công thức \ref{eq:7} trên tập LSUN 256 $\times$ 256 và VE SDE, với các bộ lấy mẫu PC vượt trội hơn hẳn các bộ lấy mẫu chỉ dự đoán với cùng một khối lượng tính toán khi ta dùng một số lượng phù hợp các bước hiệu chỉnh.
 
 \subsection{Dòng xác suất và sự liên kết với các phương trình ODE neuron} \label{4.3}
 
